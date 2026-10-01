@@ -144,7 +144,7 @@ class TestOrcaSP(unittest.TestCase):
                 R = L.ler(p)
                 self.assertEqual((R["programa"], R["versao"]), ("ORCA", "6.1.1"))
                 self.assertEqual(R["nivel"]["metodo"], "B97-3c")
-                self.assertEqual(R["nivel"]["linha"], "! B97-3c TightSCF")
+                self.assertEqual(R["nivel"]["linha"], "! B97-3c TightSCF EnGrad")
                 self.assertEqual(R["tipo"], "sp")
                 self.assertEqual(L.estado_final(R), "concluido")
                 self.assertAlmostEqual(R["energia_eV"], energia_final_orca(p) * HA, places=6)
@@ -416,7 +416,7 @@ class TestASE(unittest.TestCase):
         self.assertEqual(R["versao"], "2.22.0")
         self.assertEqual(R["nivel"]["modelo"], "uma-s-1p2p1")
         self.assertEqual(R["nivel"]["tarefa"], "omol")
-        self.assertEqual(R["nivel"]["metodo"], "uma-s-1p2p1 (tarefa omol)")
+        self.assertEqual(R["nivel"]["metodo"], "uma-s-1p2p1")
         self.assertEqual(len(R["quadros"]), 1)
         self.assertEqual(len(R["quadros"][0]["simbolos"]), len(a))
         self.assertAlmostEqual(R["energia_eV"], a.get_potential_energy(), places=9)
@@ -439,7 +439,7 @@ class TestASE(unittest.TestCase):
     def test_dimero_extxyz(self):
         R = L.ler(UMA / "estruturas" / "dimero_PD__p0.extxyz")
         self.assertEqual(len(R["quadros"][0]["simbolos"]), 24)
-        self.assertEqual(R["nivel"]["metodo"], "uma-s-1p2p1 (tarefa omol)")
+        self.assertEqual(R["nivel"]["metodo"], "uma-s-1p2p1")
 
     def test_xyz_simples_sem_energia(self):
         R = L.ler(DIMERO / "calc" / "geometrias" / "benzeno.xyz")
@@ -462,7 +462,7 @@ class TestJSON(unittest.TestCase):
                 self.assertEqual(R["programa"], "fairchem-core")
                 self.assertEqual(R["versao"], "2.22.0")
                 self.assertEqual(R["nivel"]["modelo"], "uma-s-1p2p1")
-                self.assertEqual(R["nivel"]["metodo"], "uma-s-1p2p1 (tarefa omol)")
+                self.assertEqual(R["nivel"]["metodo"], "uma-s-1p2p1")
                 self.assertEqual(len(R["freq"]["freqs_cm1"]), len(d["freqs_cm1"]))
                 self.assertEqual(len(R["freq"]["freqs_cm1"]), 3 * nat)
                 np.testing.assert_allclose(R["freq"]["freqs_cm1"], sorted(d["freqs_cm1"]), atol=0.006)

@@ -16,6 +16,8 @@ from collections import deque
 
 import numpy as np
 
+from .textos import Msg
+
 RAIOS = {"H": 0.31, "He": 0.28, "Li": 1.28, "Be": 0.96, "B": 0.84, "C": 0.76, "N": 0.71, "O": 0.66, "F": 0.57, "Ne": 0.58,
          "Na": 1.66, "Mg": 1.41, "Al": 1.21, "Si": 1.11, "P": 1.07, "S": 1.05, "Cl": 1.02, "Ar": 1.06, "K": 2.03, "Ca": 1.76,
          "Sc": 1.70, "Ti": 1.60, "V": 1.53, "Cr": 1.39, "Mn": 1.39, "Fe": 1.32, "Co": 1.26, "Ni": 1.24, "Cu": 1.32, "Zn": 1.22,
@@ -270,7 +272,7 @@ class Contexto:
             return []
         if tipo == "grupo" and nomeados and arg in nomeados:
             return [_indices(str(nomeados[arg]), self.n)]
-        raise ValueError(f"seleção desconhecida: {t}")
+        raise ValueError(Msg("r_e_sel", t=t))
 
 
 def plano(P):
@@ -394,7 +396,7 @@ def medir(def_, ctx, pos, cel, nomeados=None):
             des["linhas"].append([r3(pts[i]), r3(pts[i + 1]), None])
         des["pontos"] += [[r3(p), "A"] for p in pts]
     else:
-        raise ValueError(f"tipo de medida desconhecido: {tipo}")
+        raise ValueError(Msg("r_e_medida", tipo=tipo))
     if not vals:
         return {"valor": None, "valores": [], "desenho": des}
     v = {"media": float(np.mean(vals)), "min": float(np.min(vals)), "max": float(np.max(vals)), "primeiro": float(vals[0]),

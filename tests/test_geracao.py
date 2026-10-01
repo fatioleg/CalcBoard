@@ -14,7 +14,7 @@ from _comum import (AMOSTRAS, DIMERO, ORCA_DIMERO, PAINEL_PY, SKILL, analisar_ht
                     tem_ase, tem_yaml, L)
 
 HA = L.HA_EV
-SECOES = ["meta", "etapas", "andamento", "est", "reacao", "filmes", "filmes_omitidos", "energia", "ranking", "medidas", "freq",
+SECOES = ["meta", "etapas", "andamento", "est", "reacao", "filmes", "filmes_omitidos", "energia", "ranking", "valid", "relativa", "regras", "ressalvas", "medidas", "freq",
           "fila", "fila_meta", "glossario", "metodos", "avisos"]
 
 
@@ -166,18 +166,18 @@ class TestDimeroBenzeno(_ExemplosGerados):
 
     def test_contagens_e_sem_avisos(self):
         D = self.D1
-        self.assertEqual(len(D["est"]), 14)                              # 1 monômero + 9 dímeros UMA + 4 ORCA
+        self.assertEqual(len(D["est"]), 22)                              # 1 monômero + 9 dímeros UMA + 2 ORCA (Opt Freq) + 10 ORCA (ponto único com gradiente)
         self.assertEqual(len(D["filmes"]), 12)
-        self.assertEqual(len(D["fila"]), 4)
+        self.assertEqual(len(D["fila"]), 12)
         self.assertEqual(D["avisos"], [])
-        self.assertIn("14 estruturas, 12 filmes, 4 jobs na fila, 0 avisos", self.stdout["dimero"])
+        self.assertIn("22 estruturas, 12 filmes, 12 jobs na fila, 0 avisos", self.stdout["dimero"])
 
     def test_selos_nivel_e_programa(self):
         uma = "uma-s-1p2p1 (tarefa omol) · fairchem-core 2.22.0"
         orca = "B97-3c · ORCA 6.1.1"
         for i in ("benzeno_uma", "dimero_PD_p0", "dimero_S_p2", "dimero_T_p1"):
             self.assertEqual(self.est[i]["selo"], uma, i)
-        for i in ("benzeno_dft", "dimero_dft", "sp_benzeno", "sp_dimero"):
+        for i in ("benzeno_dft", "dimero_dft", "sp_benzeno", "sp_dimero_PD_p0", "sp_dimero_T_p2"):
             self.assertEqual(self.est[i]["selo"], orca, i)
         for j in self.D1["fila"]:
             self.assertEqual(j["selo"], orca)

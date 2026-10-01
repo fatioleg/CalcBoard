@@ -3,11 +3,9 @@
 Princípios: só lê (nunca escreve nos resultados); um arquivo que falha vira aviso; nenhum número é inventado
 (o que o arquivo não registra aparece como "não registrado"); números digitados na configuração são marcados.
 """
-import ast
 import glob
 import json
 import math
-import operator
 import os
 import re
 import statistics
@@ -19,7 +17,9 @@ import numpy as np
 
 from . import geometria as G
 from . import leitores as L
-from .textos import GLOSSARIO, TXT
+from .analise import (agregar_grupos, avaliar, calc_expr, concentracao, energia_relativa, erro_forcas, erro_tensao, faixa,
+                      limiares_condicao, nomes_expr)
+from .textos import GLOSSARIO, TXT, traduzir
 
 EV_KJ = 96.48533212
 UNID_EV = {"ev": 1.0, "ha": L.HA_EV, "hartree": L.HA_EV, "eh": L.HA_EV, "ry": L.RY_EV, "kj/mol": 1 / EV_KJ,
@@ -120,6 +120,9 @@ class Montador:
         if not ver and dec.get("versao"):
             ver = dec["versao"]
             marc.append("versão")
+        tarefa = niv.get("tarefa") or niv.get("task")
+        if metodo and tarefa:
+            metodo = f"{metodo} ({self.T['m_tarefa_curto']} {tarefa})"
         nivel_txt = " / ".join([metodo] + partes_extra) if metodo else self.T["nao_registrado"]
         prog_txt = f"{prog} {ver}" if prog and ver else (f"{prog} ({self.T['versao_nr']})" if prog else self.T["programa_nr"])
         s = f"{nivel_txt} · {prog_txt}"
@@ -170,13 +173,13 @@ class Montador:
             try:
                 self._estrutura(e, comps_glob)
             except Exception as ex:  # noqa: BLE001
-                self.aviso(f"{e['id']}: {type(ex).__name__}: {str(ex)[:200]}")
+                self.aviso(f"{e['id']}: {type(ex).__name__}: {str(self.tr(ex))[:200]}")
         return lista
 
     def _estrutura(self, e, comps_glob):
         R = LEITURA.ler(e["arquivo"], e.get("formato"))
         for a in R["avisos"]:
-            self.aviso(f"{e['id']}: {a}")
+            self.aviso(f"{e['id']}: {self.tr(a)}")
         if R["estado"] in ("ilegivel", "ausente"):
             return
         quadros = list(R["quadros"])
@@ -188,7 +191,7 @@ class Montador:
                     if R["energia_eV"] is None:
                         R = dict(R, energia_eV=T["quadros"][-1]["E_eV"])
                 for a in T["avisos"]:
-                    self.aviso(f"{e['id']}: {a}")
+                    self.aviso(f"{e['id']}: {self.tr(a)}")
         if not quadros:
             self.aviso(self.T["av_sem_geometria"].format(e["id"]))
             return
@@ -243,7 +246,7 @@ class Montador:
                 reg = json.loads(self.caminho(e["registro"]).read_text(encoding="utf-8"))
                 reg = reg if isinstance(reg, dict) else {}
             except Exception as ex:  # noqa: BLE001
-                self.aviso(f"{e['id']}: registro {e['registro']} ilegível ({type(ex).__name__})")
+                self.aviso(self.T["av_registro"].format(e["id"], e["registro"], type(ex).__name__))
         pega = lambda d, *ks: next((d[k] for k in ks if d.get(k) is not None), None)  # noqa: E731
         conv = R.get("convergiu")
         if conv is None and prog and prog["fim"] is not None:
@@ -441,12 +444,14 @@ class Montador:
         if R is None or R["estado"] == "ausente":
             return {"nome": nome, "estado": "pendente", "grupo": ent.get("grupo"), "selo": self.selo(None, ent.get("nivel")), "scf": []}
         for a in R["avisos"]:
-            self.aviso(f"{nome}: {a}")
+            self.aviso(f"{nome}: {self.tr(a)}")
         st = L.estado_final(R, float(ent.get("ativo_s", self.ativo_s)))
         if ent.get("estado"):
             st = ent["estado"]
         scf = [[r["it"], r.get("E"), r.get("dE"), r.get("conv"), r.get("t_s")] for r in R["scf"]]
         crit = R.get("scf_criterio")
+        if crit and crit.get("nota") is not None:
+            crit = dict(crit, nota=self.tr(crit["nota"]))
         if ent.get("criterio"):
             crit = dict(crit or {}, **ent["criterio"])
         self.registrar_uso(nome, R, ent.get("nivel"))
@@ -550,7 +555,8 @@ class Montador:
                 ev[vn] = v
                 checar(ss, pc.get("nome", pc["expr"]), vn)
             out["parcelas"].append({"nome": pc.get("nome") or pc["expr"], "ev": ev, "classe": pc.get("classe", "auto"),
-                                    "txt": pc.get("explicacao"), "expr": pc["expr"]})
+                                    "txt": pc.get("explicacao"), "expr": pc["expr"],
+                                    "rs": self._ressalvas_inline(pc.get("ressalvas"), pc.get("nome") or pc["expr"])})
         for vn in variantes:
             out["selos"][vn] = sorted(set(valores[vn][1].values()))
         out["avisos"] = list(dict.fromkeys(out["avisos"]))
@@ -633,7 +639,8 @@ class Montador:
             emin = min(v["E"] for v in itens.values())
             lista = sorted(({**v, "rel": v["E"] - emin} for v in itens.values()), key=lambda v: v["rel"])
             out.append({"titulo": rk.get("titulo") or self.T["ranking"], "itens": lista, "selos": sorted(selo),
-                        "nota": rk.get("nota"), "rotulo_por": rk.get("por"), "erro_rotulo": rk.get("erro_rotulo")})
+                        "nota": rk.get("nota"), "rotulo_por": rk.get("por"), "erro_rotulo": rk.get("erro_rotulo"),
+                        "rs": self._ressalvas_inline(rk.get("ressalvas"), rk.get("titulo") or "ranking")})
             if len(selo) > 1:
                 self.aviso(self.T["av_mistura"].format(rk.get("titulo") or self.T["ranking"], "", " | ".join(sorted(selo))))
         return out
@@ -664,7 +671,7 @@ class Montador:
                             d = d[int(k2)] if isinstance(d, list) else d[k2]
                     refv, reff = float(d), ref.get("fonte") or Path(ref["json"]).name
                 except Exception as ex:  # noqa: BLE001
-                    self.aviso(f"{mid}: referência ilegível ({ex})")
+                    self.aviso(self.T["av_ref_ilegivel"].format(mid, ex))
             out["defs"].append({"id": mid, "nome": md.get("nome") or mid, "tipo": md.get("tipo", "distancia"), "un": un,
                                 "dig": md.get("casas", 3 if un == "Å" else 1), "tol": md.get("tolerancia"), "ref": refv,
                                 "ref_fonte": reff, "ref_est": ref.get("estrutura") if isinstance(ref, dict) else None,
@@ -682,7 +689,7 @@ class Montador:
                     rf = G.medir(md, X["ctx"], X["cart"], X["cel_f"], nomeados)
                     ri = G.medir(md, X["ctx"], X["u"], X["cel_i"], nomeados)
                 except Exception as ex:  # noqa: BLE001
-                    self.aviso(f"{mid} @ {eid}: {ex}")
+                    self.aviso(f"{mid} @ {eid}: {self.tr(ex)}")
                     continue
                 if rf["valor"] is None and ri["valor"] is None:
                     continue
@@ -717,7 +724,7 @@ class Montador:
             for arq in self.expandir(s["arquivo"]):
                 R = LEITURA.ler(arq)
                 for a in R["avisos"]:
-                    self.aviso(f"{arq.name}: {a}")
+                    self.aviso(f"{arq.name}: {self.tr(a)}")
                 if not R.get("freq"):
                     self.aviso(self.T["av_sem_freq"].format(arq.name))
                     continue
@@ -744,7 +751,7 @@ class Montador:
                         try:
                             ref = self._ref_freq_json(ref)
                         except Exception as ex:  # noqa: BLE001
-                            self.aviso(f"{ident}: referência ilegível ({type(ex).__name__}: {ex})")
+                            self.aviso(self.T["av_ref_ilegivel"].format(ident, f"{type(ex).__name__}: {ex}"))
                             ref = None
                     val = validar_freq(F["freqs_cm1"], ref) if ref else None
                 out["sistemas"].append({"id": ident, "nome": s.get("nome") or ident, "classe": classe, "rotulo": s.get("rotulo") or R["extra"].get("rotulo"),
@@ -781,6 +788,498 @@ class Montador:
             modos.append(m)
         return dict({k: v for k, v in ref.items() if k not in ("json", "caminho", "campo_rotulo", "campo_valor", "campo_calc")}, modos=modos)
 
+    # -------------------------------------------------------------- utilidades das novas seções
+    def tr(self, x):
+        return traduzir(x, self.lang)
+
+    def _lista(self, chave, valor):
+        """valor da configuração que precisa ser lista (aceita um item solto)."""
+        if valor is None:
+            return []
+        if isinstance(valor, dict):
+            return [valor]
+        if not isinstance(valor, list):
+            self.aviso(self.T["av_cfg_tipo"].format(chave))
+            return []
+        return valor
+
+    def _expandir_pares(self, spec):
+        """(a, b, campos) de uma especificação: `a`/`b` explícitos, ou `a_grupo` + `b` com {item}, {replica}, {id}, {stem}."""
+        if spec.get("a_grupo"):
+            for k, X in self.est.items():
+                j = X["json"]
+                if j["grupo"] != spec["a_grupo"]:
+                    continue
+                campos = {"id": k, "item": j.get("item") or "", "replica": j.get("replica") or "", "grupo": j.get("grupo") or "",
+                          "stem": Path(X["cfg"]["arquivo"]).stem}
+                try:
+                    yield k, str(spec["b"]).format(**campos), campos
+                except (KeyError, IndexError):
+                    continue
+        else:
+            yield spec.get("a"), spec.get("b"), {"id": spec.get("a") or "", "item": "", "replica": ""}
+
+    def _ressalvas_inline(self, rs, onde):
+        """lista de {texto, sev} a partir de ressalvas escritas junto do objeto ao qual se aplicam."""
+        out = []
+        for r in as_list(rs):
+            n = self._ressalva(r, onde)
+            if n:
+                out.append({"texto": n["texto"], "sev": n["sev"]})
+        return out
+
+    def _ressalva(self, r, onde=""):
+        if isinstance(r, str):
+            r = {"texto": r}
+        if not isinstance(r, dict) or not str(r.get("texto") or "").strip():
+            self.aviso(self.T["av_ressalva"])
+            return None
+        sev = str(r.get("severidade") or r.get("sev") or "warn").lower()
+        sev = {"info": "info", "informacao": "info", "informação": "info", "aviso": "warn", "warn": "warn", "warning": "warn", "atencao": "warn",
+               "atenção": "warn", "bad": "bad", "erro": "bad", "error": "bad", "grave": "bad", "critico": "bad", "crítico": "bad"}.get(sev, "warn")
+        return {"id": r.get("id"), "texto": str(r["texto"]).strip(), "sev": sev, "secoes": as_list(r.get("secoes")),
+                "estruturas": as_list(r.get("estruturas")), "onde": onde}
+
+    # -------------------------------------------------------------- erro de força por átomo e validação
+    def coletar_forcas(self):
+        cfg = self.cfg.get("forcas")
+        if not cfg:
+            return None
+        if isinstance(cfg, list):
+            cfg = {"pares": cfg}
+        pcts = [float(x) for x in as_list(cfg.get("piores_pct")) or [5, 10]]
+        tol = float(cfg.get("tol_geom", 0.02))
+        out = {"pares": [], "piores_pct": pcts}
+        usados = set()
+        for spec in self._lista("forcas.pares", cfg.get("pares")):
+            for a, b, campos in self._expandir_pares(spec):
+                ident = str(spec["id"]).format(**campos) if spec.get("id") else f"{a}_x_{b}"
+                try:
+                    r = self._par_forcas(ident, a, b, spec, campos, pcts, tol, usados)
+                except Exception as ex:  # noqa: BLE001
+                    self.aviso(f"{ident}: {type(ex).__name__}: {str(self.tr(ex))[:200]}")
+                    continue
+                if r:
+                    out["pares"].append(r)
+        for spec in self._lista("forcas.precalculado", cfg.get("precalculado")):
+            ident = str(spec.get("id") or spec.get("estrutura") or "pre")
+            try:
+                r = self._forcas_precalculadas(ident, spec, pcts, usados)
+            except Exception as ex:  # noqa: BLE001
+                self.aviso(self.T["av_forca_json"].format(ident, f"{type(ex).__name__}: {str(ex)[:160]}"))
+                continue
+            if r:
+                out["pares"].append(r)
+        return out if out["pares"] else None
+
+    def _rotulos_atomo(self, X):
+        j = X["json"]
+        comps = j.get("comps") or []
+        por_el = list(j["el"])
+        por_comp = [comps[c]["nome"] if 0 <= c < len(comps) else "—" for c in j["comp"]] if comps else None
+        ctx = X["ctx"]
+        por_mol = None
+        if 2 <= len(ctx.mols) <= 8:                 # por molécula (conectividade) quando não há classes de componente
+            por_mol = [None] * len(j["el"])
+            for k, m in enumerate(ctx.mols):
+                for i in m:
+                    por_mol[i] = f"{k + 1} · {ctx.formulas[k]}"
+        return por_el, por_comp, {c["nome"]: c["cor"] for c in comps}, por_mol
+
+    def _atribuir_df(self, ident, X, eps, rotulo, usados, spec):
+        j = X["json"]
+        if j["id"] in usados:
+            self.aviso(self.T["av_forca_dup"].format(ident, j["id"]))
+            return
+        usados.add(j["id"])
+        j["dF"] = ints(eps, 1000)                   # meV/Å por átomo
+        j["dF_rot"] = rotulo
+
+    def _par_forcas(self, ident, a, b, spec, campos, pcts, tol, usados):
+        if not a or not b:
+            self.aviso(self.T["av_forca_def"].format(ident))
+            return None
+        for k in (a, b):
+            if k not in self.est:
+                self.aviso(self.T["av_forca_ausente"].format(ident, k))
+                return None
+        XA, XB = self.est[a], self.est[b]
+        qa, qb = XA["fin_q"], XB["fin_q"]
+        for k, q in ((a, qa), (b, qb)):
+            if q.get("F") is None:
+                self.aviso(self.T["av_forca_sem"].format(ident, k))
+                return None
+        if len(qa["simbolos"]) != len(qb["simbolos"]) or list(qa["simbolos"]) != list(qb["simbolos"]):
+            self.aviso(self.T["av_forca_n"].format(ident, a, b))
+            return None
+        pa, pb = np.asarray(qa["pos"], float), np.asarray(qb["pos"], float)
+        if qa["celula"] is not None and qb["celula"] is not None:
+            C = np.asarray(qb["celula"], float)
+            d = (pa - pb) @ np.linalg.inv(C)
+            d = (d - np.rint(d)) @ C
+        else:
+            d = (pa - pa.mean(0)) - (pb - pb.mean(0))
+        desvio = float(np.linalg.norm(d, axis=1).max())
+        if desvio > tol:
+            self.aviso(self.T["av_forca_geom"].format(ident, a, b, desvio, tol))
+            return None
+        E = erro_forcas(qa["F"], qb["F"])
+        por_el, por_comp, cores, por_mol = self._rotulos_atomo(XA)
+        elementos = agregar_grupos(E["dF"], por_el)
+        componentes = agregar_grupos(E["dF"], por_comp) if por_comp and len(set(por_comp)) > 1 else None
+        moleculas = agregar_grupos(E["dF"], por_mol) if por_mol and not componentes else None
+        if componentes:
+            for k in componentes:
+                componentes[k]["cor"] = cores.get(k)
+        tensao = erro_tensao(qa["S"], qb["S"]) if qa.get("S") is not None and qb.get("S") is not None and len(qa["S"]) == len(qb["S"]) else None
+        ra = spec.get("rotulo_a") or XA["json"]["nome"]
+        rb = spec.get("rotulo_b") or XB["json"]["nome"]
+        nome = (spec.get("nome") or "{a} × {b}").format(a=ra, b=rb, **{k: v for k, v in campos.items() if k not in ("a", "b")})
+        sistema = (spec.get("sistema") or "{item}").format(**campos) if spec.get("sistema") or campos.get("item") else XA["json"]["nome"]
+        for X in (XA, XB):
+            self._atribuir_df(ident, X, E["eps"], f"{ra} × {rb}", usados, spec)
+        return {"id": ident, "nome": nome, "sistema": sistema, "grupo": spec.get("grupo") or XA["json"].get("grupo"),
+                "a": a, "b": b, "rotulo_a": ra, "rotulo_b": rb, "n": len(qa["simbolos"]), "origem": "forcas",
+                "mae": E["mae"] * 1000, "max_comp": E["max_comp"] * 1000, "rmse": E["rmse"] * 1000,
+                "media_atomo": E["media_atomo"] * 1000, "max_atomo": E["max_atomo"] * 1000, "mae_tipo": "componentes",
+                "elementos": {k: dict(v, mae=v["mae"] * 1000, media_atomo=v["media_atomo"] * 1000) for k, v in elementos.items()},
+                "componentes": None if not componentes else {k: dict(v, mae=v["mae"] * 1000, media_atomo=v["media_atomo"] * 1000) for k, v in componentes.items()},
+                "moleculas": None if not moleculas else {k: dict(v, mae=v["mae"] * 1000, media_atomo=v["media_atomo"] * 1000) for k, v in moleculas.items()},
+                "conc": concentracao(E["eps"], pcts), "tensao": tensao, "dev_geom": desvio,
+                "selo_a": XA["selo"], "selo_b": XB["selo"], "ressalvas": self._ressalvas_inline(spec.get("ressalvas"), ident)}
+
+    def _forcas_precalculadas(self, ident, spec, pcts, usados):
+        X = self.est.get(spec.get("estrutura"))
+        if X is None:
+            self.aviso(self.T["av_forca_ausente"].format(ident, spec.get("estrutura")))
+            return None
+        d = json.loads(self.caminho(spec["json"]).read_text(encoding="utf-8"))
+        for k in str(spec.get("caminho", "")).split("."):
+            if k:
+                d = d[int(k)] if isinstance(d, list) else d[k]
+        f = 0.001 if str(spec.get("unidade", "eV/Å")).lower().startswith("mev") else 1.0
+        eps = np.asarray(d, float).ravel() * f
+        n = len(X["json"]["el"])
+        if len(eps) != n:
+            self.aviso(self.T["av_forca_json_n"].format(ident, len(eps), X["json"]["id"], n))
+            return None
+        por_el, por_comp, cores, por_mol = self._rotulos_atomo(X)
+        elementos = agregar_grupos(eps, por_el)
+        componentes = agregar_grupos(eps, por_comp) if por_comp and len(set(por_comp)) > 1 else None
+        moleculas = agregar_grupos(eps, por_mol) if por_mol and not componentes else None
+        if componentes:
+            for k in componentes:
+                componentes[k]["cor"] = cores.get(k)
+        ra, rb = spec.get("rotulo_a") or "A", spec.get("rotulo_b") or "B"
+        self._atribuir_df(ident, X, eps, f"{ra} × {rb}", usados, spec)
+        selo = self.selo({"programa": None, "versao": None, "nivel": {}}, spec.get("nivel")) if spec.get("nivel") else self.T["declarado_cfg"]
+        return {"id": ident, "nome": spec.get("nome") or f"{ra} × {rb}", "sistema": spec.get("sistema") or X["json"]["nome"],
+                "grupo": spec.get("grupo") or X["json"].get("grupo"), "a": X["json"]["id"], "b": None, "rotulo_a": ra, "rotulo_b": rb,
+                "n": n, "origem": "precalculado", "mae": float(eps.mean()) * 1000, "max_comp": None, "rmse": None,
+                "media_atomo": float(eps.mean()) * 1000, "max_atomo": float(eps.max()) * 1000, "mae_tipo": "atomo",
+                "elementos": {k: dict(v, mae=None, media_atomo=v["media_atomo"] * 1000) for k, v in elementos.items()},
+                "componentes": None if not componentes else {k: dict(v, mae=None, media_atomo=v["media_atomo"] * 1000) for k, v in componentes.items()},
+                "moleculas": None if not moleculas else {k: dict(v, mae=None, media_atomo=v["media_atomo"] * 1000) for k, v in moleculas.items()},
+                "conc": concentracao(eps, pcts), "tensao": None, "dev_geom": None, "selo_a": selo, "selo_b": selo,
+                "ressalvas": self._ressalvas_inline(spec.get("ressalvas"), ident)}
+
+    def coletar_validacao(self, forc, rel):
+        cfg = self.cfg.get("validacao") or {}
+        cfg = cfg if isinstance(cfg, dict) else {}
+        if not (forc or rel):
+            return None
+        padrao = {"forca_mae": {"limites": [30, 50, 100]}}
+        rotulos_pad = self.T["faixas_padrao"]
+        bandas = {}
+        for k in ("forca_mae", "forca_max", "tensao_mae", "energia_max"):
+            b = (cfg.get("bandas") or {}).get(k) or padrao.get(k)
+            if not b:
+                continue
+            lim = [float(x) for x in b.get("limites") or []]
+            if not lim or lim != sorted(lim):
+                self.aviso(self.T["av_cfg_tipo"].format(f"validacao.bandas.{k}.limites"))
+                continue
+            rot = b.get("rotulos") or (rotulos_pad if len(lim) == 3 else [f"≤ {x:g}" for x in lim] + [f"> {lim[-1]:g}"])
+            bandas[k] = {"limites": lim, "rotulos": [str(x) for x in rot][:len(lim) + 1], "unidade": b.get("unidade") or {
+                "forca_mae": "meV/Å", "forca_max": "meV/Å", "tensao_mae": "GPa", "energia_max": "kJ/mol"}[k],
+                "padrao": not (cfg.get("bandas") or {}).get(k)}
+        def faixa_de(chave, v, fator=1.0):
+            b = bandas.get(chave)
+            return None if (b is None or v is None) else faixa(v * fator, b["limites"])
+        sistemas = []
+        for r in (forc or {"pares": []})["pares"]:
+            t = r["tensao"]
+            sistemas.append({"id": r["id"], "nome": r["nome"], "sistema": r["sistema"], "n": r["n"], "mae": r["mae"], "max_comp": r["max_comp"],
+                             "mae_tipo": r["mae_tipo"], "media_atomo": r["media_atomo"], "faixa_mae": faixa_de("forca_mae", r["mae"]),
+                             "faixa_max": faixa_de("forca_max", r["max_comp"]),
+                             "tensao": None if not t else {"mae": t["mae"], "max": t["max"], "faixa": faixa_de("tensao_mae", t["mae"])},
+                             "componentes": r["componentes"], "moleculas": r["moleculas"], "elementos": r["elementos"], "conc": r["conc"], "rotulo_a": r["rotulo_a"],
+                             "rotulo_b": r["rotulo_b"], "ressalvas": r["ressalvas"], "grupo": r["grupo"]})
+        energia = []
+        for c in (rel or []):
+            m = c["metricas"]
+            if m.get("max_abs") is None:
+                continue
+            fk = UNID_EV.get(str(bandas.get("energia_max", {}).get("unidade", "kJ/mol")).lower(), 1 / EV_KJ)
+            energia.append({"id": c["id"], "titulo": c["titulo"], "mae": m["mae"], "max_abs": m["max_abs"], "faixa": faixa_de("energia_max", m["max_abs"], 1 / fk),
+                            "n": m["n"], "menor_difere": m["menor_difere"], "ressalvas": c["ressalvas"]})
+        if not sistemas and not energia:
+            return None
+        return {"titulo": cfg.get("titulo"), "nota": cfg.get("nota"), "bandas": bandas, "sistemas": sistemas, "energia": energia,
+                "ressalvas": self._ressalvas_inline(cfg.get("ressalvas"), "validacao")}
+
+    # -------------------------------------------------------------- energia relativa entre dois métodos
+    def coletar_relativa(self):
+        out = []
+        for k, cfg in enumerate(self._lista("comparacao_energia", self.cfg.get("comparacao_energia"))):
+            ident = str(cfg.get("id") or f"cmp{k + 1}")
+            itens = []
+            fonte = []
+            for it in self._lista("comparacao_energia.itens", cfg.get("itens")):
+                fonte.append(it)
+            for spec in self._lista("comparacao_energia.itens_de", cfg.get("itens_de")):
+                for a, b, campos in self._expandir_pares(spec):
+                    fonte.append({"rotulo": str(spec.get("rotulo") or "{id}").format(**campos), "a": a, "b": b, "est": a})
+            if not fonte:
+                self.aviso(self.T["av_cmp_def"].format(ident))
+                continue
+            aviso_n = []
+            for it in fonte:
+                rot = str(it.get("rotulo") or it.get("a") or "?")
+                out_t = {"digitados": []}
+                try:
+                    Ea, sa = self._termo(rot, self._com_fu(it.get("a"), cfg), out_t)
+                    Eb, sb = self._termo(rot, self._com_fu(it.get("b"), cfg), out_t)
+                except Exception as ex:  # noqa: BLE001
+                    self.aviso(self.T["av_cmp_item"].format(ident, rot, self.tr(ex)))
+                    continue
+                itens.append({"rotulo": rot, "a": Ea, "b": Eb, "sa": sa, "sb": sb, "est": it.get("est") or (it.get("a") if isinstance(it.get("a"), str) and it.get("a") in self.est else None)})
+                aviso_n += out_t["digitados"]
+            if len(itens) < 2:
+                self.aviso(self.T["av_cmp_poucos"].format(ident))
+                continue
+            rots = [i["rotulo"] for i in itens]
+            ref = cfg.get("referencia")
+            if ref is None or str(ref) not in rots:
+                if ref is not None:
+                    self.aviso(self.T["av_cmp_ref"].format(ident, ref, rots[0]))
+                ref = rots[0]
+            ri = rots.index(str(ref))
+            M = energia_relativa(rots, [i["a"] for i in itens], [i["b"] for i in itens], ri)
+            for q, i in enumerate(itens):
+                i["da"], i["db"] = M["da"][q], M["db"][q]
+            m = {kk: vv for kk, vv in M.items() if kk not in ("da", "db")}
+            m["menor_a"], m["menor_b"] = rots[M["menor_a"]], rots[M["menor_b"]]
+            sela = sorted({i["sa"] for i in itens})
+            selb = sorted({i["sb"] for i in itens})
+            for lado, ss in (("A", sela), ("B", selb)):
+                if len(ss) > 1:
+                    self.aviso(self.T["av_mistura"].format(cfg.get("titulo") or ident, lado, " | ".join(ss)))
+            out.append({"id": ident, "titulo": cfg.get("titulo") or ident, "rotulo_a": cfg.get("rotulo_a") or "A", "rotulo_b": cfg.get("rotulo_b") or "B",
+                        "ref": str(ref), "itens": [{kk: vv for kk, vv in i.items() if kk not in ("sa", "sb")} for i in itens], "metricas": m,
+                        "selos_a": sela, "selos_b": selb, "nota": cfg.get("nota"), "rotulo_por": cfg.get("por"),
+                        "digitados": aviso_n, "ressalvas": self._ressalvas_inline(cfg.get("ressalvas"), ident)})
+        return out
+
+    @staticmethod
+    def _com_fu(t, cfg):
+        if isinstance(t, str):
+            t = {"estrutura": t}
+        if isinstance(t, dict) and cfg.get("por_fu") and "estrutura" in t:
+            t = dict(t, por_fu=True)
+        return t
+
+    # -------------------------------------------------------------- regras de decisão
+    def _grandeza(self, rid, nome, g, vals, forc, rel):
+        """valor de uma grandeza da regra na sua unidade declarada: (valor, unidade, fonte, digitado)."""
+        if isinstance(g, (int, float)):
+            g = {"valor": g}
+        un = g.get("unidade")
+        fator = UNID_EV.get(str(un).lower()) if un else None
+        if "expr" in g:
+            return calc_expr(g["expr"], vals), un, g.get("fonte"), False
+        if "valor" in g:
+            return float(g["valor"]), un, g.get("fonte") or self.T["digitado"], True
+        if "estrutura" in g:
+            X = self.est.get(g["estrutura"])
+            if X is None or X["E"] is None:
+                raise ValueError(self.T["av_sem_energia"].format(g["estrutura"]))
+            ev = X["E"] / (X["json"]["n_fu"] if g.get("por_fu") else 1)
+            f = fator or 1.0
+            return ev / f, un or "eV", g.get("fonte") or X["selo"], False
+        if "json" in g:
+            d = json.loads(self.caminho(g["json"]).read_text(encoding="utf-8"))
+            for k in str(g.get("caminho", "")).split("."):
+                if k:
+                    d = d[int(k)] if isinstance(d, list) else d[k]
+            return float(d), un, g.get("fonte") or Path(g["json"]).name, False
+        if "comparacao" in g:
+            cid, _, campo = str(g["comparacao"]).partition(".")
+            c = next((x for x in (rel or []) if x["id"] == cid), None)
+            v = None if c is None else c["metricas"].get(campo or "max_abs")
+            if v is None:
+                raise ValueError(f"comparacao {g['comparacao']}")
+            if campo in ("mae", "max_abs", "rms", "vies", "mae_centrado", ""):
+                return v / (fator or 1.0), un or "eV", g.get("fonte") or c["titulo"], False
+            return float(v), un, g.get("fonte") or c["titulo"], False
+        if "forcas" in g:
+            fid, _, campo = str(g["forcas"]).partition(".")
+            r = next((x for x in ((forc or {}).get("pares") or []) if x["id"] == fid), None)
+            v = None if r is None else r.get(campo or "mae")
+            if v is None:
+                raise ValueError(f"forcas {g['forcas']}")
+            return float(v), un or "meV/Å", g.get("fonte") or r["nome"], False
+        raise ValueError(self.T["av_termo_tipo"])
+
+    def _resolver_grandezas(self, rid, defs, forc, rel):
+        """avalia as grandezas na ordem de dependência; devolve ({nome: dict}, {nome: valor}, [faltam])."""
+        vals, info, erros = {}, {}, {}
+        pend = dict(defs)
+        while pend:
+            prog = False
+            for nome, g in list(pend.items()):
+                gg = {"valor": g} if isinstance(g, (int, float)) else (g or {})
+                if "expr" in gg:
+                    try:
+                        deps = nomes_expr(gg["expr"])
+                    except Exception as ex:  # noqa: BLE001
+                        erros[nome] = f"{type(ex).__name__}: {ex}"
+                        pend.pop(nome)
+                        prog = True
+                        continue
+                    if any(d in pend for d in deps) or any(d not in defs for d in deps):
+                        if any(d not in defs for d in deps):
+                            erros[nome] = ", ".join(d for d in deps if d not in defs)
+                            pend.pop(nome)
+                            prog = True
+                        continue
+                    if any(d in erros for d in deps):
+                        erros[nome] = ", ".join(d for d in deps if d in erros)
+                        pend.pop(nome)
+                        prog = True
+                        continue
+                try:
+                    v, un, fonte, dig = self._grandeza(rid, nome, gg, vals, forc, rel)
+                    vals[nome] = v
+                    info[nome] = {"id": nome, "nome": gg.get("nome") or nome, "valor": v, "unidade": un,
+                                  "fator_ev": UNID_EV.get(str(un).lower()) if un else None, "fonte": fonte, "expr": gg.get("expr"),
+                                  "explicacao": gg.get("explicacao"), "digitado": dig}
+                except Exception as ex:  # noqa: BLE001
+                    erros[nome] = str(self.tr(ex))[:160]
+                pend.pop(nome)
+                prog = True
+            if not prog:
+                for n in pend:
+                    erros[n] = "?"
+                break
+        return info, vals, erros
+
+    def _veredito(self, outs, T, vals):
+        """primeiro resultado cuja condição vale (um resultado sem `quando` vale sempre); margem até o limiar mais próximo."""
+        escolhido = None
+        v2 = dict(vals, T=T)
+        for k, o in enumerate(outs):
+            q = o.get("quando")
+            try:
+                if q is None or avaliar(q, v2):
+                    escolhido = k
+                    break
+            except Exception:  # noqa: BLE001
+                continue
+        marg = None
+        for k, o in enumerate(outs):
+            if not o.get("quando"):
+                continue
+            for op, L in limiares_condicao(o["quando"], "T", vals):
+                d = abs(T - L)
+                ok = {"<": T < L, "<=": T <= L, ">": T > L, ">=": T >= L, "==": T == L, "!=": T != L}[op]
+                if marg is None or d < marg["valor"]:
+                    marg = {"valor": d, "limiar": L, "op": op, "resultado": o["rotulo"], "satisfeito": bool(ok),
+                            "relativa": (d / abs(L)) if L else None}
+        return escolhido, marg
+
+    def coletar_regras(self, forc, rel):
+        out = []
+        for k, cfg in enumerate(self._lista("regras", self.cfg.get("regras"))):
+            rid = str(cfg.get("id") or f"regra{k + 1}")
+            defs = cfg.get("grandezas") or {}
+            info, vals, erros = self._resolver_grandezas(rid, defs, forc, rel)
+            for n, e in erros.items():
+                self.aviso(self.T["av_regra_gr"].format(rid, n, e))
+            est = cfg.get("estatistica")
+            est = {"expr": est} if isinstance(est, str) else (est or {})
+            outs = []
+            for q, o in enumerate(cfg.get("resultados") or []):
+                sev = str(o.get("severidade") or "warn").lower()
+                sev = {"ok": "ok", "bom": "ok", "good": "ok", "warn": "warn", "aviso": "warn", "bad": "bad", "ruim": "bad", "erro": "bad", "info": "info"}.get(sev, "warn")
+                outs.append({"id": o.get("id") or f"r{q + 1}", "rotulo": o.get("rotulo") or o.get("id") or f"r{q + 1}", "quando": o.get("quando"),
+                             "sev": sev, "texto": o.get("texto")})
+            T = None
+            faltam = sorted(erros)
+            if est.get("expr"):
+                try:
+                    if all(n in vals for n in nomes_expr(est["expr"])):
+                        T = calc_expr(est["expr"], vals)
+                    else:
+                        faltam = sorted(set(faltam) | {n for n in nomes_expr(est["expr"]) if n not in vals})
+                except Exception as ex:  # noqa: BLE001
+                    self.aviso(self.T["av_regra_expr"].format(rid, self.tr(ex)))
+            un_t = est.get("unidade")
+            res = marg = None
+            if T is not None:
+                esc, marg = self._veredito(outs, T, vals)
+                res = None if esc is None else {kk: vv for kk, vv in outs[esc].items() if kk != "quando"}
+            elif est.get("expr"):
+                self.aviso(self.T["av_regra_sem"].format(rid, ", ".join(faltam) or "?"))
+            sens = []
+            for alt in self._lista("regras.sensibilidade", cfg.get("sensibilidade")):
+                dd = dict(defs)
+                dd.update(alt.get("grandezas") or {})
+                i2, v2, e2 = self._resolver_grandezas(rid, dd, forc, rel)
+                ex2 = (alt.get("estatistica") if isinstance(alt.get("estatistica"), str) else (alt.get("estatistica") or {}).get("expr")) or est.get("expr")
+                T2 = r2 = m2 = None
+                try:
+                    if ex2 and all(n in v2 for n in nomes_expr(ex2)):
+                        T2 = calc_expr(ex2, v2)
+                        e_, m2 = self._veredito(outs, T2, v2)
+                        r2 = None if e_ is None else {kk: vv for kk, vv in outs[e_].items() if kk != "quando"}
+                except Exception as ex:  # noqa: BLE001
+                    self.aviso(self.T["av_regra_expr"].format(rid, self.tr(ex)))
+                sens.append({"rotulo": alt.get("rotulo") or "?", "explicacao": alt.get("explicacao"), "T": T2, "resultado": r2, "margem": m2,
+                             "grandezas": {n: i2[n]["valor"] for n in (alt.get("grandezas") or {}) if n in i2}})
+            pre = cfg.get("pre_registrada")
+            if pre is False and not sens:
+                self.aviso(self.T["av_regra_pos"].format(rid))
+            muda = len({(s["resultado"] or {}).get("id") for s in sens if s["resultado"]} | ({res["id"]} if res else set())) > 1
+            out.append({"id": rid, "titulo": cfg.get("titulo") or rid, "pergunta": cfg.get("pergunta"), "pre_registrada": pre,
+                        "grandezas": [info[n] for n in defs if n in info], "faltam": faltam if T is None else [],
+                        "estatistica": {"nome": est.get("nome") or "T", "expr": est.get("expr"), "valor": T, "unidade": un_t,
+                                        "fator_ev": UNID_EV.get(str(un_t).lower()) if un_t else None, "casas": est.get("casas", 2)},
+                        "resultado": res, "margem": marg, "resultados": [{kk: vv for kk, vv in o.items()} for o in outs],
+                        "sensibilidade": sens, "veredito_muda": bool(muda and sens), "nota": cfg.get("nota"),
+                        "ressalvas": self._ressalvas_inline(cfg.get("ressalvas"), rid)})
+        return out
+
+    # -------------------------------------------------------------- ressalvas globais (por seção ou estrutura)
+    def coletar_ressalvas(self):
+        out = []
+        for r in self._lista("ressalvas", self.cfg.get("ressalvas")):
+            n = self._ressalva(r)
+            if not n:
+                continue
+            for alvo in n["estruturas"]:
+                alvos = [k for k, X in self.est.items() if k == alvo or X["json"]["grupo"] == alvo]
+                if not alvos:
+                    self.aviso(self.T["av_ressalva_alvo"].format(n["id"] or n["texto"][:30], alvo))
+                for k in alvos:
+                    self.est[k]["json"].setdefault("rs", []).append({"texto": n["texto"], "sev": n["sev"]})
+            out.append({"id": n["id"], "texto": n["texto"], "sev": n["sev"], "secoes": n["secoes"], "estruturas": n["estruturas"]})
+        for k, X in self.est.items():                  # ressalvas escritas junto da estrutura
+            rs = self._ressalvas_inline(X["cfg"].get("ressalvas"), k)
+            if rs:
+                X["json"].setdefault("rs", []).extend(rs)
+        return out
+
     # -------------------------------------------------------------- métodos
     def coletar_metodos(self):
         grupos = {}
@@ -803,7 +1302,7 @@ class Montador:
                     campos.append([rot, str(niv[k])])
             campos.append([T["m_programa"], (f"{prog or dec.get('programa') or T['nao_registrado']} " + (ver or dec.get("versao") or f"({T['versao_nr']})")).strip()])
             c = R.get("scf_criterio")
-            campos.append([T["m_crit_scf"], f"{c['nome']} = {c['valor']:g}" + (f" — {c['nota']}" if c.get("nota") else "") if c and c.get("valor") is not None else T["nao_registrado"]])
+            campos.append([T["m_crit_scf"], f"{c['nome']} = {c['valor']:g}" + (f" — {self.tr(c['nota'])}" if c.get("nota") else "") if c and c.get("valor") is not None else T["nao_registrado"]])
             oc = R.get("opt_criterio")
             if oc:
                 campos.append([T["m_crit_opt"], f"{oc['nome']} ≤ {oc['valor_EhBohr']:g} Eh/bohr ({oc['valor_eVA']:.3f} eV/Å)"])
@@ -823,6 +1322,11 @@ class Montador:
     def montar(self):
         t0 = time.time()
         self.coletar_estruturas()
+        forc = self.coletar_forcas()
+        rel = self.coletar_relativa()
+        val = self.coletar_validacao(forc, rel)
+        regras = self.coletar_regras(forc, rel)
+        ressalvas = self.coletar_ressalvas()
         filmes, omit = self.coletar_filmes()
         fila, metas = self.coletar_fila()
         etapas = self.coletar_etapas(fila)
@@ -844,7 +1348,8 @@ class Montador:
             "etapas": etapas, "andamento": self.coletar_andamento(filmes),
             "est": [X["json"] for X in self.est.values()], "reacao": reac,
             "filmes": filmes, "filmes_omitidos": omit,
-            "energia": self.coletar_energia(), "ranking": self.coletar_ranking(), "medidas": self.coletar_medidas(),
+            "energia": self.coletar_energia(), "ranking": self.coletar_ranking(), "valid": val, "relativa": rel, "regras": regras,
+            "ressalvas": ressalvas, "medidas": self.coletar_medidas(),
             "freq": self.coletar_freq(), "fila": fila, "fila_meta": metas,
             "glossario": gl,
         }
@@ -904,30 +1409,6 @@ def slug(t):
 def unid_cod(u):
     u = str(u).lower()
     return "kcal" if "kcal" in u else ("ev" if u == "ev" else "kj")
-
-
-OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
-
-
-def nomes_expr(expr):
-    return sorted({n.id for n in ast.walk(ast.parse(str(expr), mode="eval")) if isinstance(n, ast.Name)})
-
-
-def calc_expr(expr, vals):
-    """aritmética segura: números, nomes de termos, + − × ÷ e parênteses (nada além disso)."""
-    def ev(n):
-        if isinstance(n, ast.Expression):
-            return ev(n.body)
-        if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)):
-            return float(n.value)
-        if isinstance(n, ast.Name):
-            return float(vals[n.id])
-        if isinstance(n, ast.BinOp) and type(n.op) in OPS:
-            return OPS[type(n.op)](ev(n.left), ev(n.right))
-        if isinstance(n, ast.UnaryOp) and isinstance(n.op, (ast.USub, ast.UAdd)):
-            return -ev(n.operand) if isinstance(n.op, ast.USub) else ev(n.operand)
-        raise ValueError(f"expressão não permitida: {ast.dump(n)[:60]}")
-    return ev(ast.parse(str(expr), mode="eval"))
 
 
 def estimar_eta_etapa(itens, total, feito, rodando, paralelo=1):

@@ -15,6 +15,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .textos import Msg
+
 HA_EV = 27.211386245988
 RY_EV = HA_EV / 2
 BOHR_A = 0.529177210903
@@ -41,14 +43,16 @@ def novo(arquivo, programa=None):
             "mtime": mt, "carga": None, "mult": None, "convergiu": None, "opt_criterio": None, "extra": {}}
 
 
-def quadro(simbolos, pos, celula=None, E_eV=None, fmax=None, sigma_GPa=None, t=None, pbc=None):
+def quadro(simbolos, pos, celula=None, E_eV=None, fmax=None, sigma_GPa=None, t=None, pbc=None, forcas=None, tensao=None):
     pos = np.asarray(pos, float).reshape(-1, 3)
     cel = None if celula is None else np.asarray(celula, float).reshape(3, 3)
     if cel is not None and abs(np.linalg.det(cel)) < 1e-6:
         cel = None
     return {"simbolos": list(simbolos), "pos": pos, "celula": cel, "pbc": bool(cel is not None) if pbc is None else bool(pbc),
             "E_eV": None if E_eV is None else float(E_eV), "fmax": None if fmax is None else float(fmax),
-            "sigma_GPa": None if sigma_GPa is None else float(sigma_GPa), "t": t}
+            "sigma_GPa": None if sigma_GPa is None else float(sigma_GPa), "t": t,
+            "F": None if forcas is None else np.asarray(forcas, float).reshape(-1, 3),          # forças (eV/Å), se o arquivo as traz
+            "S": None if tensao is None else np.asarray(tensao, float).ravel()}                 # tensão em Voigt (GPa; + = tração)
 
 
 def classe_programa(prog):
@@ -177,8 +181,7 @@ def ler_orca(p):
     tolP = re.findall(r"RMS Density Change\s+TolRMSP\s+\.+\s+([\d.eE+-]+)", t)
     if tolE:
         R["scf_criterio"] = {"nome": "TolE", "valor": _f(tolE[-1]), "coluna": "|ΔE| (Eh)",
-                             "nota": "o ORCA exige também TolRMSP/TolMaxP; o gráfico mostra |ΔE| contra TolE"
-                             + (f" e RMS-DP contra TolRMSP = {tolP[-1]}" if tolP else "")}
+                             "nota": Msg("r_orca_scf_nota_p", v=tolP[-1]) if tolP else Msg("r_orca_scf_nota")}
         if tolP:
             R["extra"]["tolRMSP"] = _f(tolP[-1])
     # geometrias e energias por ciclo
@@ -197,14 +200,29 @@ def ler_orca(p):
     tols = re.findall(r"^\s*MAX gradient\s+\d+\.\d+\s+(\d+\.\d+)", t, re.M)
     if tols:
         R["opt_criterio"] = {"nome": "MAX gradient", "valor_EhBohr": float(tols[-1]), "valor_eVA": float(tols[-1]) * HA_BOHR_EVA}
+    gblocos = []                                   # CARTESIAN GRADIENT (Eh/bohr): força = −gradiente
+    for m in re.finditer(r"CARTESIAN GRADIENT\n-+\n\s*\n(.*?)\n\s*\n", t, re.S):
+        g3 = [[float(x) for x in mm.groups()] for mm in re.finditer(r"^\s*\d+\s+[A-Za-z]+\s*:\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$", m.group(1), re.M)]
+        if g3:
+            gblocos.append((m.start(), -np.array(g3) * HA_BOHR_EVA))
     for k, (pos0, sim, pos) in enumerate(geos):
         fim = geos[k + 1][0] if k + 1 < len(geos) else len(t)
         E = next((e for (q, e) in ens if pos0 < q < fim), None)
         g = next((g for (q, g) in grads if pos0 < q < fim), None)
-        R["quadros"].append(quadro(sim, pos, E_eV=None if E is None else E * HA_EV, fmax=None if g is None else g * HA_BOHR_EVA))
+        F = next((f for (q, f) in gblocos if pos0 < q < fim and len(f) == len(sim)), None)
+        R["quadros"].append(quadro(sim, pos, E_eV=None if E is None else E * HA_EV, fmax=None if g is None else g * HA_BOHR_EVA, forcas=F))
     # o último bloco de coordenadas costuma repetir a geometria final (após "HAS CONVERGED"): remove duplicata sem energia
     if len(R["quadros"]) >= 2 and R["quadros"][-1]["E_eV"] is None and np.allclose(R["quadros"][-1]["pos"], R["quadros"][-2]["pos"], atol=1e-6):
         R["quadros"].pop()
+    if R["quadros"] and R["quadros"][-1]["F"] is None:      # sem bloco no .out: arquivo .engrad ao lado (Eh/bohr)
+        eg = Path(p).with_suffix(".engrad")
+        if eg.exists():
+            try:
+                F = _ler_engrad(eg)
+                if len(F) == len(R["quadros"][-1]["simbolos"]):
+                    R["quadros"][-1]["F"] = F
+            except Exception as e:  # noqa: BLE001
+                R["avisos"].append(Msg("r_ilegivel", arq=eg.name, erro=str(e)[:120]))
     if ens:
         R["energia_eV"] = ens[-1][1] * HA_EV
     R["extra"]["n_ciclos_opt"] = len(blocos) - 1
@@ -258,11 +276,24 @@ def ler_orca(p):
         try:
             q = ler_xyz_quadros(trj, "Ha")
             if len(q) > len(R["quadros"]):
-                R["extra"]["notas"] = [f"quadros lidos de {trj.name}"]
+                R["extra"]["notas"] = [Msg("r_quadros_de", arq=trj.name)]
+                F_fin = R["quadros"][-1]["F"] if R["quadros"] else None
                 R["quadros"] = q
+                if F_fin is not None and len(q[-1]["simbolos"]) == len(F_fin):
+                    q[-1]["F"] = F_fin
         except Exception as e:  # noqa: BLE001
-            R["avisos"].append(f"{trj.name} ilegível: {e}")
+            R["avisos"].append(Msg("r_ilegivel", arq=trj.name, erro=e))
     return R
+
+
+def _ler_engrad(p):
+    """`.engrad` do ORCA: bloco '# The current gradient in Eh/bohr' (3N números, um por linha) -> forças (N,3) em eV/Å."""
+    t = texto(p)
+    m = re.search(r"The current gradient in Eh/bohr\s*\n#\s*\n(.*?)(?=^#|\Z)", t, re.S | re.M)
+    if not m:
+        raise ValueError("sem bloco de gradiente")
+    g = np.array([float(x) for x in m.group(1).split()])
+    return -g.reshape(-1, 3) * HA_BOHR_EVA
 
 
 def _bloco_hess(t, nome):
@@ -321,10 +352,10 @@ def _orca_freq(p, t, R):
             if m:
                 f_out = [float(x) for x in re.findall(r"^\s*\d+:\s+(-?\d+\.\d+)\s+cm", m.group(1), re.M)]
                 if len(f_out) == len(fr["freqs_cm1"]) and not np.allclose(sorted(f_out), fr["freqs_cm1"], atol=0.05):
-                    R["avisos"].append("frequências do .out e do .hess discordam; usando as do .hess")
+                    R["avisos"].append(Msg("r_hess_discorda"))
             return fr
         except Exception as e:  # noqa: BLE001
-            R["avisos"].append(f"{hess.name} ilegível ({e}); só as frequências do .out")
+            R["avisos"].append(Msg("r_hess_ilegivel", arq=hess.name, erro=e))
     m = list(re.finditer(r"VIBRATIONAL FREQUENCIES\n-+\n(.*?)(?:\n\s*\n\s*-+\n|NORMAL MODES)", t, re.S))[-1]
     f_out = [float(x) for x in re.findall(r"^\s*\d+:\s+(-?\d+\.\d+)\s+cm", m.group(1), re.M)]
     q = R["quadros"][-1] if R["quadros"] else None
@@ -403,13 +434,13 @@ def ler_cp2k(p):
             c_inp = g(r"^\s*CUTOFF\s+([\d.]+)")
             R["nivel"].update({"funcional": f_inp, "dispersao": v_inp, "base": ", ".join(b_inp) or None,
                                "corte": f"{float(c_inp):.0f} Ry" if c_inp else R["nivel"]["corte"], "fonte": f"lido de {inp.name}"})
-            R["extra"]["notas"] = R["extra"].get("notas", []) + [f"nível lido de {inp.name} (a saída não o imprime)"]
+            R["extra"]["notas"] = R["extra"].get("notas", []) + [Msg("r_nivel_de", arq=inp.name)]
             if eps is None and g(r"^\s*EPS_SCF\s+([\d.Ee+-]+)"):
                 eps = _f(g(r"^\s*EPS_SCF\s+([\d.Ee+-]+)"))
     R["nivel"]["metodo"] = " ".join(x for x in (R["nivel"]["funcional"], R["nivel"]["dispersao"]) if x) or None
     if eps is not None:
         R["scf_criterio"] = {"nome": "EPS_SCF", "valor": eps, "coluna": "Convergence",
-                             "nota": "compare a coluna Convergence do CP2K com EPS_SCF (não o ΔE da última coluna)"}
+                             "nota": Msg("r_cp2k_crit")}
     m = re.search(r"PROGRAM STARTED AT\s+(\S+ \S+)", t)
     R["inicio"] = _cp2k_data(m.group(1)) if m else None
     m = re.search(r"PROGRAM ENDED AT\s+(\S+ \S+)", t)
@@ -490,13 +521,24 @@ def ler_cp2k(p):
                 if k < len(grads):
                     x["fmax"] = grads[k] if k else None
             R["quadros"] = q
-            R["extra"]["notas"] = R["extra"].get("notas", []) + [f"quadros lidos de {pos_xyz.name}"]
+            R["extra"]["notas"] = R["extra"].get("notas", []) + [Msg("r_quadros_de", arq=pos_xyz.name)]
         except Exception as e:  # noqa: BLE001
-            R["avisos"].append(f"{pos_xyz.name} ilegível: {e}")
+            R["avisos"].append(Msg("r_ilegivel", arq=pos_xyz.name, erro=e))
     if not R["quadros"] and sim:
         R["quadros"].append(quadro(sim, pos, celula, E_eV=ens[0] * HA_EV if ens else None))
         if len(ens) == 1 and R["tipo"] == "sp":
             R["quadros"][-1]["E_eV"] = ens[0] * HA_EV
+    fb = []
+    for m in re.finditer(r"ATOMIC FORCES in \[a\.u\.\]\s*\n\s*\n\s*# Atom.*?\n(.*?)\n\s*SUM OF ATOMIC FORCES", t, re.S):
+        g3 = [[float(x) for x in mm.groups()] for mm in re.finditer(r"^\s*\d+\s+\d+\s+\S+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$", m.group(1), re.M)]
+        if g3:
+            fb.append(np.array(g3) * HA_BOHR_EVA)       # o CP2K imprime forças (não gradientes), em Ha/bohr
+    if fb and R["quadros"]:
+        if len(fb) == len(R["quadros"]) and all(len(f) == len(q["simbolos"]) for f, q in zip(fb, R["quadros"])):
+            for f, q in zip(fb, R["quadros"]):
+                q["F"] = f
+        elif len(fb[-1]) == len(R["quadros"][-1]["simbolos"]):
+            R["quadros"][-1]["F"] = fb[-1]
     if re.search(r"GEOMETRY OPTIMIZATION COMPLETED", t):
         R["convergiu"] = True
     elif re.search(r"MAXIMUM NUMBER OF OPTIMIZATION STEPS REACHED", t):
@@ -505,7 +547,7 @@ def ler_cp2k(p):
         R["estado"] = "concluido"
         if R["scf_convergiu"] is False:
             R["estado"] = "falhou"
-            R["avisos"].append("SCF não convergiu (SCF run NOT converged)")
+            R["avisos"].append(Msg("r_scf_nao_conv"))
     elif re.search(r"\bABORT\b|\*\*\* ERROR|CPASSERT failed", t):
         R["estado"] = "falhou"
     else:
@@ -517,7 +559,7 @@ def ler_cp2k(p):
             try:
                 R["freq"] = ler_cp2k_molden(mol[0])["freq"]
             except Exception as e:  # noqa: BLE001
-                R["avisos"].append(f"{mol[0].name} ilegível: {e}")
+                R["avisos"].append(Msg("r_ilegivel", arq=mol[0].name, erro=e))
     return R
 
 
@@ -545,7 +587,7 @@ def ler_cp2k_molden(p):
             else:
                 atual.append([float(x) for x in t.split()[:3]])
     if not freqs or len(freqs) != len(modos):
-        raise ValueError("Molden sem [FREQ]/[FR-NORM-COORD] consistentes")
+        raise ValueError(Msg("r_e_molden"))
     M = np.array(modos)
     idx = [i for i in range(M.shape[1]) if np.abs(M[:, i, :]).max() > 1e-8]
     R["freq"] = montar_freq(freqs, M[:, idx, :], sim, pos, idx)
@@ -583,7 +625,7 @@ def ler_vasp_outcar(p):
     if R["tipo"] == "opt" and isif and isif in ("3", "4", "5", "6", "7"):
         R["tipo"] = "opt-celula"
     if ediff:
-        R["scf_criterio"] = {"nome": "EDIFF", "valor": _f(ediff), "coluna": "|dE| (eV)", "nota": "o VASP compara a variação de energia entre iterações eletrônicas com EDIFF"}
+        R["scf_criterio"] = {"nome": "EDIFF", "valor": _f(ediff), "coluna": "|dE| (eV)", "nota": Msg("r_vasp_crit")}
     # elementos
     el = re.findall(r"VRHFIN\s*=\s*([A-Za-z]+)\s*:", t)
     m = re.search(r"ions per type\s*=\s*([\d\s]+)", t)
@@ -600,10 +642,13 @@ def ler_vasp_outcar(p):
         rows = [[float(x) for x in ln.split()[:6]] for ln in m.group(1).strip().splitlines()]
         A = np.array(rows)
         cel = cels[min(k + 1, len(cels) - 1)] if cels else None
-        sg = None
+        sg = ten = None
         if k < len(stresses):
             sg = float(np.abs(np.array(stresses[k])).max() * 0.1)
-        R["quadros"].append(quadro(sim, A[:, :3], cel, E_eV=ens[k] if k < len(ens) else None, fmax=_max_forca(A[:, 3:6]), sigma_GPa=sg))
+            if len(stresses[k]) >= 6:                       # "in kB": XX YY ZZ XY YZ ZX; Voigt do ASE (xx yy zz yz zx xy), tração positiva
+                ten = -0.1 * np.array(stresses[k][:6])[[0, 1, 2, 4, 5, 3]]
+        R["quadros"].append(quadro(sim, A[:, :3], cel, E_eV=ens[k] if k < len(ens) else None, fmax=_max_forca(A[:, 3:6]), sigma_GPa=sg,
+                                   forcas=A[:, 3:6], tensao=ten))
     if ens:
         R["energia_eV"] = ens[-1]
     m = re.search(r"Elapsed time \(sec\):\s+([\d.]+)", t)
@@ -624,13 +669,13 @@ def ler_vasp_outcar(p):
             O = ler_vasp_oszicar(osz)
             R["scf"], R["n_ciclos_scf"], R["scf_unidade_E"] = O["scf"], O["n_ciclos_scf"], "eV"
         except Exception as e:  # noqa: BLE001
-            R["avisos"].append(f"OSZICAR ilegível: {e}")
+            R["avisos"].append(Msg("r_oszicar", erro=e))
     # frequências (IBRION 5-8)
     if "Eigenvectors and eigenvalues of the dynamical matrix" in t:
         try:
             R["freq"] = _vasp_freq(t, R["quadros"][0] if R["quadros"] else None)
         except Exception as e:  # noqa: BLE001
-            R["avisos"].append(f"frequências do OUTCAR ilegíveis: {e}")
+            R["avisos"].append(Msg("r_outcar_freq", erro=e))
     return R
 
 
@@ -737,11 +782,17 @@ def ler_gaussian(p):
     tf = re.findall(r"Maximum Force\s+\d+\.\d+\s+(\d+\.\d+)", t)
     if tf:
         R["opt_criterio"] = {"nome": "Maximum Force", "valor_EhBohr": float(tf[-1]), "valor_eVA": float(tf[-1]) * HA_BOHR_EVA}
+    fgb = []
+    if rota and re.search(r"nosymm", rota, re.I):
+        for m in re.finditer(r"Forces \(Hartrees/Bohr\)\s*\n\s*Number\s+Number\s+X\s+Y\s+Z\s*\n\s*-+\n(.*?)\n\s*-+", t, re.S):
+            g3 = [[float(x) for x in ln.split()[2:5]] for ln in m.group(1).splitlines() if len(ln.split()) >= 5]
+            fgb.append((m.start(), np.array(g3) * HA_BOHR_EVA))     # força (Hartree/bohr) -> eV/Å
     for k, (q0, sim, pos) in enumerate(geos):
         fim = geos[k + 1][0] if k + 1 < len(geos) else len(t)
         E = next((e for (q, e) in ens if q0 < q < fim), None)
         g = next((g for (q, g) in fmx if q0 < q < fim), None)
-        R["quadros"].append(quadro(sim, pos, E_eV=None if E is None else E * HA_EV, fmax=None if g is None else g * HA_BOHR_EVA))
+        F = next((f for (q, f) in fgb if q0 < q < fim and len(f) == len(sim)), None)
+        R["quadros"].append(quadro(sim, pos, E_eV=None if E is None else E * HA_EV, fmax=None if g is None else g * HA_BOHR_EVA, forcas=F))
     # freq jobs repetem a geometria final: remove quadros finais sem energia idênticos ao anterior
     while len(R["quadros"]) >= 2 and R["quadros"][-1]["E_eV"] is None:
         R["quadros"].pop()
@@ -767,7 +818,7 @@ def ler_gaussian(p):
     m = re.search(r"Requested convergence on RMS density matrix=\s*([\d.D+-]+)", t)
     if m:
         R["scf_criterio"] = {"nome": "RMS densidade", "valor": _f(m.group(1)), "coluna": "RMSDP",
-                             "nota": "o Gaussian compara a variação RMS da matriz densidade (RMSDP) com o critério pedido"}
+                             "nota": Msg("r_gauss_crit")}
     if "Optimization completed" in t or "Stationary point found" in t:
         R["convergiu"] = True
     elif re.search(r"Optimization stopped|Number of steps exceeded", t):
@@ -807,7 +858,7 @@ def _gaussian_freq(t, q):
             freqs.append(f)
             modos.append(A[:, 3 * k:3 * k + 3])
     if not freqs:
-        raise ValueError("bloco de frequências do Gaussian sem modos legíveis")
+        raise ValueError(Msg("r_e_gauss_freq"))
     return montar_freq(freqs, modos, q["simbolos"] if q else None, q["pos"] if q else None, excluir=0)
 
 
@@ -843,7 +894,7 @@ def ler_qe(p):
     R["tipo"] = {"scf": "sp", "relax": "opt", "vc-relax": "opt-celula", "md": "md", "vc-md": "md"}.get(calc, calc)
     if thr is not None:
         R["scf_criterio"] = {"nome": "conv_thr", "valor": thr, "coluna": "estimated scf accuracy (Ry)",
-                             "nota": "o pw.x compara a 'estimated scf accuracy' com conv_thr"}
+                             "nota": Msg("r_qe_crit")}
     blocos, atual = [], []
     tcpu_ant = pend = None
     for ln in t.splitlines():
@@ -878,7 +929,7 @@ def ler_qe(p):
         for a in read(p, ":", format="espresso-out"):
             _quadro_ase(R, a)
     except Exception as e:  # noqa: BLE001
-        R["avisos"].append(f"geometrias não lidas pelo ASE (espresso-out): {str(e)[:120]}")
+        R["avisos"].append(Msg("r_qe_ase", erro=str(e)[:120]))
     if R["tipo"] and R["tipo"].startswith("opt"):
         R["convergiu"] = True if re.search(r"End of BFGS Geometry Optimization|bfgs converged", t) else (False if "The maximum number of steps has been reached" in t else None)
     m = re.search(r"PWSCF\s+:\s+(.*?)CPU\s+(.*?)WALL", t)
@@ -906,22 +957,27 @@ CHAVES_INFO_NIVEL = ("nivel", "level", "metodo", "method", "modelo", "model", "f
 
 
 def _quadro_ase(R, a):
-    E = fm = sg = None
+    E = fm = sg = F = ten = None
     try:
         E = float(a.get_potential_energy())
     except Exception:
         E = a.info.get("energy") if isinstance(a.info.get("energy"), (int, float)) else None
     try:
-        fm = _max_forca(a.get_forces())
+        try:
+            F = a.get_forces(apply_constraint=False)
+        except TypeError:
+            F = a.get_forces()
+        fm = _max_forca(F)
     except Exception:
-        fm = None
+        fm = F = None
     try:
         s = a.get_stress(voigt=True)
-        sg = float(np.abs(s).max() * 160.21766208)          # eV/Å³ -> GPa
+        ten = np.asarray(s, float) * 160.21766208           # eV/Å³ -> GPa (ASE: tração positiva)
+        sg = float(np.abs(ten).max())
     except Exception:
-        sg = None
+        sg = ten = None
     cel = np.array(a.cell) if a.cell.rank == 3 else None
-    R["quadros"].append(quadro(a.get_chemical_symbols(), a.positions, cel, E_eV=E, fmax=fm, sigma_GPa=sg, pbc=bool(a.pbc.any())))
+    R["quadros"].append(quadro(a.get_chemical_symbols(), a.positions, cel, E_eV=E, fmax=fm, sigma_GPa=sg, pbc=bool(a.pbc.any()), forcas=F, tensao=ten))
 
 
 def ler_ase(p, formato=None):
@@ -931,7 +987,7 @@ def ler_ase(p, formato=None):
     if not isinstance(fr, list):
         fr = [fr]
     if not fr:                                     # o ASE adivinhou um formato e não achou nenhuma estrutura: não é "concluído"
-        raise ValueError("nenhuma estrutura reconhecida no arquivo")
+        raise ValueError(Msg("r_e_sem_estrutura"))
     for a in fr:
         _quadro_ase(R, a)
     info = dict(fr[-1].info) if fr else {}
@@ -946,8 +1002,6 @@ def ler_ase(p, formato=None):
     if niv:
         R["nivel"] = niv
         R["nivel"]["metodo"] = " ".join(niv[k] for k in ("modelo", "model", "metodo", "method", "funcional", "functional", "nivel", "level") if k in niv) or None
-        if "tarefa" in niv or "task" in niv:
-            R["nivel"]["metodo"] = (R["nivel"]["metodo"] or "") + f" (tarefa {niv.get('tarefa') or niv.get('task')})"
     if "convergiu" in info:
         R["convergiu"] = bool(info["convergiu"])
     R["tipo"] = "opt" if len(fr) > 1 else "estrutura"
@@ -992,8 +1046,6 @@ def ler_json(p):
         R["versao"] = m.get("versao") or m.get("version")
         R["nivel"] = {k: v for k, v in m.items() if k not in ("programa", "software", "versao", "version") and v not in (None, "")}
         mod = " ".join(str(m[k]) for k in ("modelo", "metodo", "funcional") if m.get(k))
-        if m.get("tarefa"):
-            mod += f" (tarefa {m['tarefa']})"
         R["nivel"]["metodo"] = mod or None
         modos = d.get("modos")
         R["freq"] = montar_freq(d["freqs_cm1"], modos, d.get("simbolos"), d.get("posicoes"), d.get("indices_deslocados"), d.get("celula"))
@@ -1023,9 +1075,9 @@ def ler_json(p):
                 A = ler_ase(alvo)
                 R["quadros"] = A["quadros"][-1:]
             except Exception as e:  # noqa: BLE001
-                R["avisos"].append(f"estrutura {est} ilegível: {e}")
+                R["avisos"].append(Msg("r_est_ilegivel", est=est, erro=e))
         return R
-    raise ValueError("JSON sem esquema reconhecido (freqs_cm1 / energia_eV / energia_Ha)")
+    raise ValueError(Msg("r_e_json"))
 
 
 # ----------------------------------------------------------------------------------------------------------
@@ -1088,7 +1140,7 @@ def ler(p, formato=None):
     if not p.exists():
         R = novo(p)
         R["estado"] = "ausente"
-        R["avisos"].append(f"arquivo não encontrado: {p}")
+        R["avisos"].append(Msg("r_nao_achado", arq=p))
         return R
     try:
         tipo = formato or detectar(p)
@@ -1108,7 +1160,7 @@ def ler(p, formato=None):
     except Exception as e:  # noqa: BLE001
         R = novo(p)
         R["estado"] = "ilegivel"
-        R["avisos"].append(f"{p.name}: não consegui ler ({type(e).__name__}: {str(e)[:200]})")
+        R["avisos"].append(Msg("r_nao_li", arq=p.name, tipo=type(e).__name__, erro=e if e.args and isinstance(e.args[0], Msg) else str(e)[:200]))
         return R
 
 
