@@ -5,7 +5,7 @@ Etapas (cada uma pode ser rodada sozinha):
   python gerar_dados.py uma         otimizações UMA (fairchem) com trajetória .traj + progresso .jsonl
   python gerar_dados.py freq        frequências UMA (ase.vibrations) do monômero e do dímero PD
   python gerar_dados.py orca        ORCA B97-3c Opt Freq (monômero e dímero PD) — precisa de `orca6` no PATH
-  python gerar_dados.py orca_sp     ORCA B97-3c single point nas geometrias UMA (mesma geometria, C-073)
+  python gerar_dados.py orca_sp     ORCA B97-3c single point + gradiente (EnGrad) nas 10 geometrias UMA (mesma geometria)
   python gerar_dados.py anonimizar  troca nome da máquina e diretório de trabalho impressos pelo ORCA por <anonimizado>
 
 Variáveis: ORCA (caminho do executável, padrão `orca6`), NPROCS (padrão 4), UMA_MODELO (padrão uma-s-1p2p1).
@@ -190,8 +190,9 @@ def etapa_orca():
 
 def etapa_orca_sp():
     from ase.io import read
-    for nome in ("benzeno", "dimero_PD__p0"):
-        rodar_orca(ORCA_DIR / "sp_na_geometria_uma", f"sp_{nome}", read(UMA / "estruturas" / f"{nome}.extxyz"), "! B97-3c TightSCF")
+    nomes = ["benzeno"] + [f"dimero_{t}__p{p}" for t in ("PD", "S", "T") for p in (0, 1, 2)]
+    for nome in nomes:       # EnGrad: o .out traz o bloco CARTESIAN GRADIENT (forças DFT na geometria da UMA)
+        rodar_orca(ORCA_DIR / "sp_na_geometria_uma", f"sp_{nome}", read(UMA / "estruturas" / f"{nome}.extxyz"), "! B97-3c TightSCF EnGrad")
 
 
 def etapa_anonimizar():

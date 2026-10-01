@@ -40,9 +40,10 @@ estruturas:
     nome: "Benzeno · B97-3c na geometria UMA"
     arquivo: calc/orca/sp_na_geometria_uma/sp_benzeno.out
     grupo: sp
-  - id: sp_dimero
-    nome: "Dímero PD · B97-3c na geometria UMA"
-    arquivo: calc/orca/sp_na_geometria_uma/sp_dimero_PD__p0.out
+  - id: "sp_dimero_{item}_p{replica}"
+    nome: "Dímero {item} · partida {replica} · B97-3c na geometria UMA"
+    arquivo: "calc/orca/sp_na_geometria_uma/sp_dimero_*__p*.out"
+    padrao: "sp_dimero_(?P<item>[A-Z]+)__p(?P<replica>\\d+)"
     grupo: sp
 
 # Reagentes → produtos (os visualizadores lado a lado)
@@ -74,9 +75,9 @@ etapas:
   - id: E5
     nome: "DFT na geometria do UMA (mesma geometria)"
     arquivos: ["calc/orca/sp_na_geometria_uma/*.out"]
-    total: 2
+    total: 10
     depende_de: [E2, E4]
-    nota: "Compara métodos na MESMA geometria: separa o erro de energia do erro de geometria."
+    nota: "Compara métodos na MESMA geometria (energia e forças, B97-3c com gradiente): separa o erro de energia do erro de geometria."
 
 energia:
   nome_principal: "UMA"
@@ -88,7 +89,7 @@ energia:
     E_S: dimero_S_p0
   variantes:
     "B97-3c (geometria própria)": {E_mon: benzeno_dft, E_PD: dimero_dft}
-    "B97-3c na geometria UMA": {E_mon: sp_benzeno, E_PD: sp_dimero}
+    "B97-3c na geometria UMA": {E_mon: sp_benzeno, E_PD: sp_dimero_PD_p0, E_T: sp_dimero_T_p0, E_S: sp_dimero_S_p0}
   diagramas:
     - titulo: "Formação do dímero a partir de dois benzenos isolados"
       tipo: niveis
@@ -128,7 +129,7 @@ medidas:
     b: "mol:2&el:C"
     explicacao: "Distância entre os centros dos dois anéis."
     estruturas: [dimeros, dft, sp]
-    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft, sp_dimero]}
+    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft]}
     tolerancia: [0.1, 0.25]
   - id: perp
     nome: "Separação interplanar"
@@ -137,7 +138,7 @@ medidas:
     b: "mol:2&el:C"
     explicacao: "A linha centro–centro projetada na normal do anel 1: quão afastados estão os planos."
     estruturas: [dimeros, dft, sp]
-    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft, sp_dimero]}
+    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft]}
     tolerancia: [0.1, 0.25]
   - id: slip
     nome: "Deslizamento lateral"
@@ -146,7 +147,7 @@ medidas:
     b: "mol:2&el:C"
     explicacao: "Quanto um anel está deslocado para o lado em relação ao outro."
     estruturas: [dimeros, dft, sp]
-    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft, sp_dimero]}
+    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft]}
     tolerancia: [0.15, 0.4]
   - id: ang
     nome: "Ângulo entre os planos"
@@ -157,6 +158,70 @@ medidas:
     explicacao: "0° = anéis paralelos (S e PD); 90° = perpendiculares (T)."
     estruturas: [dimeros, dft, sp]
     tolerancia: [2, 5]
+
+# ---- Validação método × referência (UMA × B97-3c na MESMA geometria) -------------------------------------------
+# Erro de força por átomo: |F_UMA − F_B97-3c|. Colore os átomos no Explorador e no Ampliar (modo |ΔF|).
+forcas:
+  piores_pct: [5, 10]
+  pares:
+    - {id: f_benzeno, a: benzeno_uma, b: sp_benzeno, sistema: "Benzeno isolado", rotulo_a: "UMA", rotulo_b: "B97-3c"}
+    - {id: "f_{item}_p{replica}", a_grupo: dimeros, b: "sp_dimero_{item}_p{replica}", sistema: "Dímero {item} · partida {replica}",
+       rotulo_a: "UMA", rotulo_b: "B97-3c"}
+
+validacao:
+  titulo: "UMA × B97-3c na mesma geometria"
+  nota: "O erro de força mede o quanto a rede neural reproduz o DFT em geometrias que ELA própria otimizou; nelas, as forças da UMA são ~0 e o DFT mostra o que falta."
+  bandas:                       # para a energia relativa; as da força (30/50/100 meV/Å) são o padrão da skill
+    energia_max: {limites: [1, 3, 6], unidade: "kJ/mol"}
+
+comparacao_energia:
+  - id: arranjos
+    titulo: "Energia relativa dos arranjos do dímero: UMA × B97-3c"
+    rotulo_a: "UMA"
+    rotulo_b: "B97-3c"
+    referencia: "PD"
+    itens:
+      - {rotulo: "PD", a: dimero_PD_p0, b: sp_dimero_PD_p0}
+      - {rotulo: "T",  a: dimero_T_p0,  b: sp_dimero_T_p0}
+      - {rotulo: "S",  a: dimero_S_p0,  b: sp_dimero_S_p0}
+    nota: "Partida 0 de cada arranjo, em geometria UMA; energia B97-3c por ponto único (mesma geometria)."
+
+# Regra de decisão de demonstração: o arranjo PD é mais estável que o T de forma distinguível da incerteza?
+regras:
+  - id: pd_vs_t
+    titulo: "PD é mais estável que T?"
+    pergunta: "A diferença de energia T − PD (B97-3c, na geometria UMA) supera a incerteza da comparação UMA × B97-3c?"
+    pre_registrada: false
+    grandezas:
+      R:    {nome: "R = E(T) − E(PD) (B97-3c)", expr: "E_T - E_PD", unidade: "kJ/mol", explicacao: "Positivo: PD mais estável."}
+      E_T:  {nome: "E(T), B97-3c", estrutura: sp_dimero_T_p0, unidade: "kJ/mol"}
+      E_PD: {nome: "E(PD), B97-3c", estrutura: sp_dimero_PD_p0, unidade: "kJ/mol"}
+      U:    {nome: "U = máx(dispersão, piso, erro UMA × B97-3c)", expr: "max(disp, piso, err)", unidade: "kJ/mol", explicacao: "A maior das três incertezas."}
+      disp: {nome: "Dispersão entre as 3 partidas de PD", expr: "max(P0, P1, P2) - min(P0, P1, P2)", unidade: "kJ/mol"}
+      P0:   {nome: "E(PD p0), UMA", estrutura: dimero_PD_p0, unidade: "kJ/mol"}
+      P1:   {nome: "E(PD p1), UMA", estrutura: dimero_PD_p1, unidade: "kJ/mol"}
+      P2:   {nome: "E(PD p2), UMA", estrutura: dimero_PD_p2, unidade: "kJ/mol"}
+      piso: {nome: "Piso de precisão", valor: 0.1, unidade: "kJ/mol", fonte: "valor digitado nesta demonstração"}
+      err:  {nome: "Erro máximo |ΔΔE| UMA × B97-3c", comparacao: "arranjos.max_abs", unidade: "kJ/mol"}
+    estatistica: {nome: "T = R / U", expr: "R / U", casas: 2}
+    resultados:
+      - {id: estabelecido, rotulo: "estabelecido", quando: "T >= 2", severidade: ok, texto: "PD é mais estável que T além da incerteza."}
+      - {id: refutado, rotulo: "refutado", quando: "T <= -2", severidade: bad, texto: "T é mais estável que PD além da incerteza."}
+      - {id: inconclusivo, rotulo: "inconclusivo", severidade: warn, texto: "A diferença não se distingue da incerteza."}
+    sensibilidade:
+      - {rotulo: "erro = MAE em vez do máximo", grandezas: {err: {comparacao: "arranjos.mae", unidade: "kJ/mol"}}}
+      - {rotulo: "erro = MAE centrado (sem o viés médio)", grandezas: {err: {comparacao: "arranjos.mae_centrado", unidade: "kJ/mol"}}}
+      - {rotulo: "sem piso", grandezas: {piso: {valor: 0, unidade: "kJ/mol"}}}
+    ressalvas:
+      - {texto: "A definição de U (máximo de três termos) foi escolhida depois de ver os números desta demonstração; por isso a tabela de sensibilidade vem junto.", severidade: warn}
+
+ressalvas:
+  - texto: "UMA e B97-3c foram comparadas em geometrias otimizadas pela UMA (não pelo B97-3c): o erro de energia mistura o erro do método e o de geometria."
+    severidade: warn
+    secoes: [valid, relativa, regra]
+  - texto: "Geometria otimizada pela UMA (BFGS, fmax ≤ 0,01 eV/Å): as forças da UMA são ~0 e as do B97-3c, não."
+    severidade: info
+    estruturas: [dimeros]
 
 frequencias:
   sistemas:

@@ -1,4 +1,4 @@
-! B97-3c TightSCF
+! B97-3c TightSCF EnGrad
 %pal nprocs 4 end
 %maxcore 2500
 * xyz 0 1
