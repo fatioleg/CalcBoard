@@ -1,0 +1,70 @@
+# painel.yaml — modelo comentado da skill painel-calculos. Apague o que não usar: cada seção só aparece se houver dado.
+# Referência completa: references/formato-config.md.  Gerar:  python <skill>/scripts/painel.py gerar painel.yaml
+titulo: "Painel dos cálculos — <projeto>"
+subtitulo: "Uma frase dizendo a pergunta que os cálculos respondem."
+lang: pt                 # pt | en
+unidade: kJ/mol          # unidade inicial: kJ/mol | kcal/mol | eV (o leitor troca no topo; a escolha fica salva)
+recarga_s: 120           # recarga automática da página; 0 desliga
+ativo_s: 1800            # saída sem fim há menos de N s = "rodando"; mais que isso = "parado?"
+saida: painel.html       # relativo a esta pasta
+# raiz: ..               # pasta base dos caminhos (padrão: a desta configuração)
+
+# Como agrupar/colorir moléculas no 3D (opcional; sem isto: uma classe por fórmula distinta)
+# componentes:
+#   - {nome: "hospedeiro", contem: [Zn]}
+#   - {nome: "solvente", formula: H2O, cor: "#17becf"}
+
+estruturas:
+  - id: reagente
+    nome: "Reagente otimizado"
+    arquivo: calc/reagente/opt.out            # ORCA/CP2K/Gaussian/pw.x/OUTCAR/vasprun/extxyz/traj/cif/POSCAR/json
+    # inicial: geom/reagente.xyz              # senão, o 1º quadro do próprio arquivo
+    # trajetoria: calc/reagente/opt.traj      # quadros do filme (se o arquivo principal não os tiver)
+    # progresso: calc/reagente/opt.jsonl      # E, fmax, σ por passo (gráficos do filme; acompanhamento ao vivo)
+    # nivel: {nivel: "UMA uma-s-1p1 (omol)", programa: fairchem-core, versao: "2.x"}   # só se o arquivo não registrar
+    papel: reagente                           # reagente | produto | ts
+    # n_fu: 1
+  - id: "conf_{stem}"                         # um arquivo por confôrmero (glob); {stem} = nome do arquivo sem extensão
+    arquivo: "calc/conformeros/*.out"
+    grupo: conformeros
+
+etapas:
+  - {id: E1, nome: "Otimizações", estruturas: [reagente], nota: "Explicação curta, em linguagem simples."}
+  - {id: E2, nome: "Confôrmeros", arquivos: ["calc/conformeros/*.out"], total: 12, depende_de: [E1]}
+
+energia:
+  nome_principal: "DFT"
+  por: "por molécula"
+  termos:
+    E_R: reagente
+    # E_x: {json: resultados.json, caminho: "ciclo.dE", unidade: eV}
+    # E_lit: {valor: -3.1, unidade: kcal/mol, fonte: "Autor et al. 2020"}   # marcado como número digitado
+  # variantes: {"MLIP": {E_R: reagente_mlip}}
+  diagramas:
+    - titulo: "Perfil"
+      tipo: niveis          # niveis | perfil (R→TS→P com curva)
+      referencia: "E_R"
+      niveis:
+        - {rotulo: "R", expr: "E_R"}
+  parcelas:
+    - {nome: "Exemplo", expr: "E_R - E_R", explicacao: "O que esta diferença significa."}
+
+ranking:
+  - {titulo: "Confôrmeros", grupo: conformeros, por_fu: false}
+
+# medidas:
+#   - {id: d1, nome: "Distância centroide–centroide", tipo: distancia, a: "mol:1&el:C", b: "mol:2&el:C",
+#      referencia: {valor: 3.9, fonte: "raio X"}, tolerancia: [0.1, 0.25]}
+
+# frequencias:
+#   sistemas:
+#     - {id: f_dft, nome: "Reagente · DFT", arquivo: calc/reagente/opt.out}
+#   comparar: [{a: f_mlip, b: f_dft}]
+
+fila:
+  - {saida: "calc/*/*.out", grupo: "Cálculos locais"}
+  # - {json_vivo: remoto/ao_vivo.json, grupo: "Servidor", programa: CP2K, criterio: {nome: EPS_SCF, valor: 1.0e-6}}
+
+# metodos:                     # cartões extras (marcados como "declarado na configuração")
+#   - {titulo: "Geometrias iniciais", campos: {Origem: "CSD, refcode XXXX"}}
+# glossario: {"Termo": "Definição curta."}

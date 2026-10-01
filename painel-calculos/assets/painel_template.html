@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="__LANG__">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="painel-calculos (skill do Claude Code)">
+<title>__TITULO__</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--muted:#5d677a;--line:#dfe3ea;--acc:#2f6fdb;--acc2:#e8590c;
+--ok:#1f9d55;--run:#d98e04;--pend:#8792a6;--bad:#d64545;--vbg:#ffffff;--soft:#eef2fb;--pos:#d64545;--neg:#1f9d55;--qm:#1f9d55;--ml:#2f6fdb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141c;--card:#181e29;--ink:#e6eaf2;--muted:#9aa5ba;--line:#2b3446;--acc:#6ea0ff;--acc2:#ff9a52;--ok:#4cc982;--run:#f0b73a;--pend:#7d889d;--bad:#ff7a7a;--vbg:#0c1018;--soft:#1d2536;--pos:#ff7a7a;--neg:#4cc982;--qm:#4cc982;--ml:#6ea0ff}}
+:root[data-theme="dark"]{--bg:#10141c;--card:#181e29;--ink:#e6eaf2;--muted:#9aa5ba;--line:#2b3446;--acc:#6ea0ff;--acc2:#ff9a52;--ok:#4cc982;--run:#f0b73a;--pend:#7d889d;--bad:#ff7a7a;--vbg:#0c1018;--soft:#1d2536;--pos:#ff7a7a;--neg:#4cc982;--qm:#4cc982;--ml:#6ea0ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,"Segoe UI",Roboto,sans-serif}
+header.top{padding:22px 16px 8px;max-width:1320px;margin:0 auto}
+header.top h1{margin:0;font-size:28px;letter-spacing:-.01em}
+header.top p{margin:4px 0 0;color:var(--muted)}
+nav{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px}
+nav .in{max-width:1320px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+nav a{color:var(--ink);text-decoration:none;padding:4px 9px;border-radius:99px;font-size:13.5px;background:var(--soft)}
+nav a:hover{outline:2px solid var(--acc)}
+nav .sp{flex:1}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 11px;cursor:pointer;font-size:13px}
+main{max-width:1320px;margin:0 auto;padding:0 16px 60px}
+section{margin-top:38px;scroll-margin-top:60px}
+section>h2{font-size:23px;margin:0 0 4px}
+section>.lead{color:var(--muted);margin:0 0 16px;max-width:920px}
+h3{font-size:17px;margin:18px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:600;color:#fff;background:var(--pend)}
+.pill.ok{background:var(--ok)}.pill.run{background:var(--run);color:#201500}.pill.bad{background:var(--bad)}.pill.warn{background:var(--run);color:#201500}
+.flow{display:flex;gap:0;align-items:stretch;flex-wrap:wrap}
+.node{flex:1 1 190px;min-width:190px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 14px;position:relative;margin:6px 0}
+.node.ok{border-color:var(--ok)}.node.run{border-color:var(--run);box-shadow:0 0 0 3px color-mix(in srgb,var(--run) 25%,transparent)}.node.bad{border-color:var(--bad)}
+.node h3{margin:6px 0 4px;font-size:15px;line-height:1.3}
+.node .nota{font-size:13px;color:var(--muted);margin-top:6px}
+.node .dep{font-size:12px;color:var(--muted);margin-top:4px}
+.node .bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin:8px 0 4px}
+.node .bar i{display:block;height:100%;background:var(--ok)}
+.node.run .bar i{background:var(--run)}
+.arrow{align-self:center;font-size:26px;color:var(--muted);padding:0 6px}
+.here{position:absolute;top:-13px;left:12px;background:var(--acc);color:#fff;font-size:12px;border-radius:99px;padding:1px 10px;font-weight:700}
+.live{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--run);border-radius:12px;background:color-mix(in srgb,var(--run) 10%,var(--card));margin-top:8px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--run);animation:pulso 1.2s infinite}
+@keyframes pulso{50%{opacity:.25}}
+.v3d{width:100%;height:340px;position:relative;border-radius:10px;overflow:hidden;background:var(--vbg);border:1px solid var(--line)}
+.v3d.big{height:560px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 12px;padding:10px 14px}
+.ctrl label{font-size:14px;display:flex;gap:6px;align-items:center;color:var(--muted)}
+select,input[type=range]{font:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px 8px;max-width:100%}
+input[type=range]{padding:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:var(--card);color:var(--ink);padding:5px 12px;cursor:pointer;font:inherit;font-size:14px}
+.seg button.on{background:var(--acc);color:#fff}
+.cap{font-size:13px;color:var(--muted);margin:6px 0 0}
+.head3d{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;flex-wrap:wrap}
+.head3d b{font-size:16px}.head3d span{color:var(--muted);font-size:13px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
+.kv div{background:var(--soft);border-radius:10px;padding:6px 10px;font-size:13.5px}
+.g4 .kv{grid-template-columns:repeat(2,1fr)}
+.kv small{display:block;color:var(--muted);font-size:12px}
+.kv .d{font-size:12px;color:var(--muted)}
+.cbar{height:12px;border-radius:6px;background:linear-gradient(90deg,#2c7bb6,#abd9e9,#ffffbf,#fdae61,#d7191c);margin-top:6px}
+.cbar+div{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.med{display:grid;gap:8px;margin-top:10px}
+.med .it{border-left:4px solid var(--pend);background:var(--soft);padding:7px 11px;border-radius:0 10px 10px 0;font-size:14px}
+.med .it.ok{border-color:var(--ok)}.med .it.bad{border-color:var(--bad)}.med .it.warn{border-color:var(--run)}
+.med .it b{display:block}.med .it span{color:var(--muted);font-size:13px}
+.termos{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:14px}
+.termo{border-radius:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--pend)}
+.termo.pos{border-top-color:var(--pos)}.termo.neg{border-top-color:var(--neg)}.termo.tot{border-top-color:var(--acc)}
+.termo .n{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.termo .t{font-weight:600}.termo p{margin:4px 0;font-size:14px;color:var(--muted)}
+.termo .fx{font-size:13px;margin-top:6px}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.job{flex:1 1 230px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 14px;border-left:6px solid var(--pend)}
+.job.ok{border-left-color:var(--ok)}.job.run{border-left-color:var(--run)}.job.bad{border-left-color:var(--bad)}
+.job b{font-size:15px}.job>b:first-child{display:block}.job span{font-size:13px;color:var(--muted)}.job .pill{color:#fff;font-size:12.5px}.job .pill.run{color:#201500}
+.job.big{flex:1 1 380px}
+.job .plotw{margin-top:8px;width:100%;height:230px}
+details.g{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:8px 0;padding:8px 14px}
+details.g summary{cursor:pointer;font-weight:700}
+details.g p{margin:6px 0 2px;color:var(--muted)}
+.vazio{padding:18px;border:2px dashed var(--line);border-radius:14px;color:var(--muted)}
+.vazio b{color:var(--ink)}
+.plot{width:100%;height:340px}
+.plot.s{height:200px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:6px 14px;font:inherit;cursor:pointer}
+.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+.banner{background:var(--run);color:#201500;font-weight:800;padding:10px 16px;border-radius:12px;margin:0 0 12px;letter-spacing:.01em}
+.alerta{border:1px solid var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--card));border-radius:12px;padding:8px 14px;margin:8px 0;font-size:14px}
+.alerta.warn{border-color:var(--run);background:color-mix(in srgb,var(--run) 12%,var(--card))}
+.src{font-size:12.5px;color:var(--muted);margin:8px 0 0;padding:5px 10px;border-left:3px solid var(--acc);background:var(--soft);border-radius:0 8px 8px 0;line-height:1.4}
+.src b{color:var(--ink)}
+.selo{display:inline-block;font-size:12px;padding:1px 8px;border-radius:7px;background:var(--soft);border:1px solid var(--line);color:var(--muted);margin:2px 0}
+.selo.ml{border-color:var(--ml)}.selo.qm{border-color:var(--qm)}
+.tabw{overflow-x:auto}
+.tab{display:grid;gap:6px 10px;align-items:stretch;min-width:520px}
+.tab .gh{font-weight:700;font-size:13.5px;padding:2px 6px;color:var(--ink);border-bottom:2px solid var(--line)}
+.tab .gl{padding:4px 6px}.tab .gl b{display:block;font-size:14px}.tab .gl span{font-size:12.5px;color:var(--muted);line-height:1.35;display:block}
+.tab .sv{background:var(--soft);border-radius:10px;padding:6px 10px;font-size:14px;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline}
+.tab .sv .d{font-size:12px;color:var(--muted)}
+.dl{display:inline-block;border-radius:99px;padding:0 8px;font-size:12px;font-weight:700;color:#fff;background:var(--pend)}
+.dl.ok{background:var(--ok)}.dl.warn{background:var(--run);color:#201500}.dl.bad{background:var(--bad)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.mdl{display:grid;grid-template-columns:minmax(110px,max-content) 1fr;gap:6px 12px;margin:10px 0 0;font-size:14px}
+.mdl dt{color:var(--muted);font-weight:600}.mdl dd{margin:0;overflow-wrap:anywhere}
+.vwrap{position:relative}
+.zbtn{position:absolute;top:8px;right:8px;z-index:5;border:1px solid var(--line);background:color-mix(in srgb,var(--card) 90%,transparent);color:var(--ink);border-radius:9px;padding:3px 10px;font:inherit;font-size:13px;cursor:pointer}
+.zbtn:hover{outline:2px solid var(--acc)}
+body.zopen{overflow:hidden}
+.zoom{position:fixed;inset:0;z-index:100;display:flex;background:var(--vbg)}
+.zoom[hidden]{display:none}
+.zmain{position:relative;flex:1;min-width:0}
+#zv{position:absolute;inset:0}
+.zp{width:min(380px,92vw);overflow:auto;background:var(--card);border-left:1px solid var(--line);padding:10px 12px}
+.zoom.pcol .zp{display:none}
+.ztop{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:5}
+.zbadge{position:absolute;left:10px;bottom:10px;max-width:min(70%,900px);font-size:12px;background:color-mix(in srgb,var(--card) 90%,transparent);border:1px solid var(--line);border-radius:10px;padding:6px 10px;z-index:5;line-height:1.4;color:var(--muted)}
+.zbadge b{color:var(--ink)}
+.zcbar{position:absolute;left:10px;top:10px;width:230px;z-index:5;background:color-mix(in srgb,var(--card) 90%,transparent);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.zp label{display:flex;gap:6px;align-items:center;font-size:13.5px;margin:4px 0;color:var(--muted);flex-wrap:wrap}
+.zp details.g{padding:6px 10px;margin:6px 0}
+.zp .seg{margin:4px 0}
+.zbts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.zbts .btn,.zp .btn{padding:4px 10px;font-size:13px}
+.zrow{display:flex;gap:6px;align-items:center;margin:4px 0;flex-wrap:wrap}
+.zrow label{margin:0;flex:1 1 120px}
+.zrow input[type=color]{width:34px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
+.zabas button:disabled{opacity:.4;cursor:not-allowed}
+#erro_js{display:none;position:fixed;bottom:10px;left:10px;right:10px;z-index:300;background:#d64545;color:#fff;padding:8px 14px;border-radius:10px;font-size:13px;white-space:pre-wrap;max-height:30vh;overflow:auto}
+footer{max-width:1320px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:13px}
+@media (max-width:640px){.v3d{height:300px}.v3d.big{height:420px}header.top h1{font-size:23px}}
+@media print{nav,.zbtn,#erro_js{display:none}}
+</style>
+</head>
+<body>
+<div id="erro_js"></div>
+<script>
+window.__erros = [];
+window.addEventListener('error', function (e) { window.__erros.push(String(e.message) + ' @' + (e.lineno || '')); var b = document.getElementById('erro_js'); if (b) { b.style.display = 'block'; b.textContent = 'Erro de JavaScript no painel: ' + window.__erros.join('\n'); } });
+</script>
+<header class="top"><h1 id="titulo"></h1><p id="subtitulo"></p><p id="gerado_l"></p></header>
+<nav><div class="in" id="navin"><span class="sp"></span>
+<span class="seg unseg" title="unidade de energia / energy unit"><button data-u="kj">kJ/mol</button><button data-u="kcal">kcal/mol</button><button data-u="ev">eV</button></span>
+<span id="reload_ind" class="cap" style="margin:0;font-size:12.5px"></span><button id="reload_pausa"></button>
+<button id="tema"></button>
+</div></nav>
+<div id="zoom" class="zoom" hidden>
+<div class="zmain"><div id="zv"></div>
+<div class="ztop"><button id="zoom_pt" class="btn"></button><button id="zoom_nova" class="btn"></button><button id="zoom_x" class="btn"></button></div>
+<div id="zcbar" class="zcbar" style="display:none"><div class="cbar"></div><div><span>0 Å</span><span id="zdmax"></span></div><div class="cap" style="margin:2px 0 0" id="zcbar_t"></div></div>
+<div id="zbadge" class="zbadge"></div></div>
+<aside class="zp"><div id="zp_corpo"></div></aside>
+</div>
+<main id="main"></main>
+<footer id="rodape"></footer>
+<script>/*__VENDOR_3DMOL__*/</script>
+<script>/*__VENDOR_PLOTLY__*/</script>
+<script>
+const D = __DADOS__;
+const $ = id => document.getElementById(id);
+const LANG = D.meta.lang === 'en' ? 'en' : 'pt';
+/* ---------- textos (pt padrão, en opcional; a configuração pode sobrescrever as introduções em meta.textos) ---------- */
+const I18N = {
+pt: {
+  gerado: 'Gerado em', atualiza: 'Atualiza sozinho', semAuto: 'Sem atualização automática', tema: 'claro/escuro', pausar: 'pausar', retomar: 'retomar',
+  pausada: 'atualização pausada', prox: 'próxima atualização em', adiada: 'atualização adiada (em uso)', atualizando: 'atualizando…',
+  s_aqui: 'Você está aqui', s_reac: 'Reagentes → Produtos', s_expl: 'Explorador de estruturas', s_filme: 'Filme da otimização', s_energia: 'Perfil de energia',
+  s_ranking: 'Ranking', s_medidas: 'Distâncias e medidas', s_freq: 'Frequências vibracionais', s_fila: 'Fila de cálculos externos', s_metodos: 'Métodos e programas', s_gloss: 'Glossário',
+  l_aqui: 'As etapas do trabalho, da esquerda para a direita. Cada caixa diz se a etapa terminou, está rodando, falhou ou ainda não começou, quantos cálculos já foram feitos e, quando há ritmo medido, quanto falta.',
+  l_reac: 'O ponto de partida e o de chegada, lado a lado, com a geometria otimizada. Arraste para girar, role para aproximar, e use 🔍 Ampliar para todas as opções de análise.',
+  l_expl: 'Escolha qualquer estrutura calculada. Compare a geometria inicial com a final (otimizada) e veja quais átomos mais se moveram.',
+  l_filme: 'Uma otimização é uma sequência de passos: a cada passo os átomos andam um pouco na direção em que a energia cai. Aqui você assiste a esse caminho e vê a energia e a força restante caírem juntas.',
+  l_energia: 'Energias relativas, montadas a partir das energias totais lidas dos arquivos. Negativo = libera energia. Energias eletrônicas (0 K), sem energia de ponto zero nem entropia, salvo indicação.',
+  l_ranking: 'Energia de cada arranjo em relação ao mais estável (zero). Barras de erro: dispersão entre réplicas (partidas diferentes) do mesmo arranjo. Clique numa barra para abri-la no Explorador.',
+  l_medidas: 'Medidas definidas na configuração (centroides, planos, normais, deslizamento, ângulos), calculadas em cada estrutura. Entre parênteses, a diferença para a referência.',
+  l_freq: 'Cada linha vertical é um modo de vibração (frequência em cm⁻¹). As intensidades não aparecem. Clique numa linha para ver a molécula vibrando.',
+  l_fila: 'Cálculos mais pesados, em outros programas ou máquinas. O estado é lido do final dos arquivos de saída; o SCF é mostrado ao vivo com o critério de convergência certo de cada programa.',
+  l_metodos: 'Como cada resultado foi obtido: método, base, programa e versão, critérios de convergência. Tudo é lido dos arquivos; o que não foi registrado aparece como "não registrado", e o que foi declarado na configuração vem marcado.',
+  l_gloss: 'Clique para abrir.',
+  aqui: 'você está aqui', concluido: 'concluído', rodando: 'rodando', pendente: 'pendente', falhou: 'falhou', parado: 'parado?', parcial: 'parcial', desconhecido: 'desconhecido', ilegivel: 'ilegível', ausente: 'ausente',
+  de: 'de', ultima: 'última atualização', depende: 'depende de', eta: 'estimativa', faltam: 'faltam', ritmo: 'ritmo medido', porCalc: 'por cálculo (mediana de', calcs: 'cálculos)', intervalo: 'intervalo médio entre conclusões',
+  semAndamento: 'Nenhuma otimização com registro passo a passo em andamento neste momento.', rodandoAgora: 'Rodando agora: ', parada: 'Parada? ', passo: 'passo', fase: 'fase',
+  calculadoCom: 'Calculado com', geomIni: 'Geometria inicial', arquivo: 'Arquivo', energiaTotal: 'energia total', porFU: 'energia por FU', passos: 'passos', fmaxF: 'fmax final', sigF: 'σ máx. final',
+  conv: 'convergiu?', sim: 'sim', nao: 'não', estado: 'estado', volume: 'volume', tempo: 'tempo de cálculo', maiorDesl: 'maior deslocamento', semDados: 'Sem dados ainda.',
+  supercel: 'Supercélula', hidrog: 'hidrogênios', caixa: 'caixa da célula', medidasChk: 'mostrar medidas', girar: 'girar', estilo: 'Estilo',
+  reagente: 'reagente', produto: 'produto', ts: 'estado de transição', final: 'final', inicial: 'inicial', sob: 'sobrepostas', disp: 'deslocamento |Δr|',
+  estrutura: 'Estrutura', replica: 'réplica', corDesl: 'Cor = quanto o átomo andou da posição inicial até a final (descontada a translação/rotação ou a deformação da célula). Azul quase não se moveu; vermelho se moveu mais.',
+  semFilme: '<b>Ainda não há trajetória gravada.</b> Quando houver (ASE .traj, ORCA _trj.xyz, CP2K -pos-1.xyz, OUTCAR, log do Gaussian...), regenere o painel e o filme surge aqui, com a energia e a força restante passo a passo.',
+  otim: 'Otimização', tocar: '▶ tocar', pausarF: '❚❚ pausar', quadro: 'quadro', amostrados: 'Quadros amostrados (no máximo 60 por otimização), sempre com o primeiro e o último.', omitidas: 'trajetória(s) omitida(s) para manter o arquivo leve.',
+  energia: 'energia', passoAc: 'passo', unidadeTodo: 'Unidade de energia (vale para a página toda)', conversao: '1 eV = 96,485 kJ/mol = 23,061 kcal/mol; 1 kcal/mol = 4,184 kJ/mol.',
+  variante: 'Nível', comparaVar: 'Comparação entre níveis de cálculo', digitado: 'contém número digitado na configuração', semEnergia: 'Sem energias para montar o perfil.',
+  relMin: 'relativa ao mais estável', clicaExpl: 'clique para abrir no Explorador', referencia: 'Referência', dif: 'diferença', legTol: 'Cor da diferença em relação à referência: verde dentro da 1ª tolerância, amarelo dentro da 2ª, vermelho acima.',
+  medida: 'Medida', semMedidas: 'Nenhuma medida resolvida nas estruturas.', geoInicial: 'geometria inicial', geoFinal: 'final',
+  exploratorio: 'EXPLORATÓRIO — resultado preliminar, não é conclusão.', imag: 'frequência(s) imaginária(s)', imagTxt: 'A geometria não é um mínimo verdadeiro ao longo destes modos (ou há ruído numérico); trate as frequências baixas com cautela.',
+  zpe: 'Energia de ponto zero (ZPE)', zpeT: 'segue a unidade escolhida no topo', validacao: 'Validação contra a referência', mae: 'erro médio absoluto (MAE)', maxErr: 'erro máximo', modo: 'Modo', calc: 'calculado', refCol: 'referência',
+  legFreqTol: 'Cor da diferença: verde até a 1ª tolerância, amarelo até a 2ª, vermelho acima. Modo calculado = o de frequência mais próxima (atribuição por proximidade, não por simetria).',
+  consol: 'Consolidação MLIP × DFT', consolT: 'diferença média entre modos de frequência mais próxima', escolhaModo: 'Escolha um modo', modoAnt: '◀ modo anterior', modoProx: 'próximo modo ▶', animar: 'animar',
+  freqImagTit: 'Frequência imaginária', freqImagTxt: 'O número de onda negativo indica que a geometria não é um mínimo ao longo deste modo (ou ruído numérico).', fonte: 'classe', semModos: 'Os deslocamentos deste modo não estão no arquivo (omitidos por tamanho ou não gravados).',
+  linhasLig: 'Linhas pontilhadas ligam modos de frequência mais próxima entre sistemas comparados.', classeMl: 'MLIP', classeQm: 'quântico',
+  lidoEm: 'Lido em', critScf: 'critério', convCol: 'convergência', soInfo: '(só informativo)', iterScf: 'iteração do SCF', iterLidas: 'iterações lidas no último ciclo', convergiuScf: 'convergiu', naoConvergiu: 'ainda não convergiu',
+  etaScf: 'estimativa: faltam ~{a} iterações, cerca de {m} min para atingir o critério', semEta: 'sem estimativa (a convergência não está diminuindo)', jaAbaixo: 'já abaixo do critério nesta rodada', porIter: 'por iteração',
+  energiaFinal: 'energia final', energiaUlt: 'última energia lida', atividade: 'Atividade recente da fila', semFila: 'Nenhum cálculo externo configurado.', abortou: 'A tentativa anterior abortou (histórico desta rodada).', inicio: 'início',
+  maquina: 'Máquina', avisos: 'Avisos da leitura', avisosT: 'arquivos que não puderam ser lidos ou combinações suspeitas; o painel continua com o resto.',
+  ampliar: '🔍 Ampliar', ampliarT: 'abrir em tela cheia, com todas as opções de análise', painelZ: '☰ painel', novaAba: '↗ nova aba', fechar: '× fechar',
+  zEstr: 'estrutura', zVib: 'vibração', zFilme: 'filme', zExib: 'Exibição', zFundo: 'Fundo', zFundoAuto: 'segue o tema', claro: 'claro', escuro: 'escuro', zComp: 'Componentes', zCorTodos: 'colorir todos os átomos pela cor do componente',
+  zIsolar: 'isolar', zNenhum: '— nenhum —', zViz: 'vizinhos até', zMedidas: 'Medidas da configuração', zMostrarMed: 'mostrar centroides, normais e rótulos', zNormais: 'normais dos planos',
+  zCont: 'Contatos e rótulos', zContChk: 'contatos do componente', zAbaixo: 'abaixo de', zRot: 'rótulos dos átomos (elemento + índice)', zHover: 'Passe o mouse sobre um átomo para ver elemento, índice e molécula.',
+  zMedInt: 'Medidas por clique', zMedir: 'Medir', zDist: 'distância (2 átomos)', zAng: 'ângulo (3 átomos)', zDih: 'diedro (4 átomos)', zLimpar: 'limpar medidas', zMedVazio: 'Escolha o tipo e clique nos átomos, na ordem.',
+  zModos: 'Modos de vibração', zAmp: 'Amplitude', zSetas: 'setas', zVista: 'Vista e exportação', zAoLongo: 'ao longo de', zPerp: '⟂ ao plano da 1ª medida', zReset: 'resetar vista', zPng: 'PNG (alta resolução)',
+  zSemVib: 'Sem dados de frequência para esta estrutura.', zSemFilme: 'Sem trajetória gravada para esta estrutura.', zContatos: 'contatos', zLimite: '(limite de exibição)', zSemCel: 'Sem célula: o CIF precisa de uma célula unitária.',
+  semWebgl: 'Visualizador 3D indisponível neste navegador (WebGL desativado).', molecula: 'molécula', semComp: 'sem componente',
+  rodape: 'Painel somente-leitura gerado pela skill painel-calculos: não altera nenhum resultado. 3Dmol.js e plotly.js embutidos (funciona sem internet).',
+  ciclo: 'Ciclo', parcelas: 'Parcelas', porPadrao: 'por', expr: 'expressão', erroBarra: 'dispersão entre réplicas', n: 'n',
+},
+en: {
+  gerado: 'Generated on', atualiza: 'Refreshes itself', semAuto: 'No automatic refresh', tema: 'light/dark', pausar: 'pause', retomar: 'resume',
+  pausada: 'refresh paused', prox: 'next refresh in', adiada: 'refresh postponed (in use)', atualizando: 'refreshing…',
+  s_aqui: 'You are here', s_reac: 'Reactants → Products', s_expl: 'Structure explorer', s_filme: 'Optimization movie', s_energia: 'Energy profile',
+  s_ranking: 'Ranking', s_medidas: 'Distances and measures', s_freq: 'Vibrational frequencies', s_fila: 'External calculation queue', s_metodos: 'Methods and programs', s_gloss: 'Glossary',
+  l_aqui: 'The stages of the work, left to right. Each box tells whether the stage is done, running, failed or not started, how many calculations are done and, when a pace was measured, how long is left.',
+  l_reac: 'Start and end points side by side, with optimized geometries. Drag to rotate, scroll to zoom, and use 🔍 Zoom for every analysis option.',
+  l_expl: 'Pick any computed structure. Compare the initial and final (optimized) geometries and see which atoms moved most.',
+  l_filme: 'An optimization is a sequence of steps; at each step atoms move downhill in energy. Watch the path and see energy and residual force drop together.',
+  l_energia: 'Relative energies built from the total energies read from the files. Negative = energy released. Electronic energies (0 K), no zero-point energy or entropy unless stated.',
+  l_ranking: 'Energy of each arrangement relative to the most stable (zero). Error bars: spread between replicas (different starting points). Click a bar to open it in the Explorer.',
+  l_medidas: 'Measures defined in the configuration (centroids, planes, normals, slip, angles), computed for each structure. In parentheses, the difference to the reference.',
+  l_freq: 'Each vertical line is a vibrational mode (frequency in cm⁻¹). Intensities are not shown. Click a line to watch the molecule vibrate.',
+  l_fila: 'Heavier calculations in other programs or machines. Status is read from the end of the output files; the SCF is shown live with each program\'s proper convergence criterion.',
+  l_metodos: 'How each result was obtained: method, basis, program and version, convergence criteria. Everything is read from the files; what was not recorded shows as "not recorded", and what was declared in the configuration is marked.',
+  l_gloss: 'Click to open.',
+  aqui: 'you are here', concluido: 'done', rodando: 'running', pendente: 'pending', falhou: 'failed', parado: 'stalled?', parcial: 'partial', desconhecido: 'unknown', ilegivel: 'unreadable', ausente: 'missing',
+  de: 'of', ultima: 'last update', depende: 'depends on', eta: 'estimate', faltam: 'remaining', ritmo: 'measured pace', porCalc: 'per calculation (median of', calcs: 'calculations)', intervalo: 'mean interval between completions',
+  semAndamento: 'No step-by-step optimization running right now.', rodandoAgora: 'Running now: ', parada: 'Stalled? ', passo: 'step', fase: 'phase',
+  calculadoCom: 'Computed with', geomIni: 'Initial geometry', arquivo: 'File', energiaTotal: 'total energy', porFU: 'energy per FU', passos: 'steps', fmaxF: 'final fmax', sigF: 'final max σ',
+  conv: 'converged?', sim: 'yes', nao: 'no', estado: 'status', volume: 'volume', tempo: 'wall time', maiorDesl: 'largest displacement', semDados: 'No data yet.',
+  supercel: 'Supercell', hidrog: 'hydrogens', caixa: 'cell box', medidasChk: 'show measures', girar: 'spin', estilo: 'Style',
+  reagente: 'reactant', produto: 'product', ts: 'transition state', final: 'final', inicial: 'initial', sob: 'overlaid', disp: 'displacement |Δr|',
+  estrutura: 'Structure', replica: 'replica', corDesl: 'Color = how far the atom moved from initial to final (rigid motion or cell deformation removed). Blue barely moved; red moved most.',
+  semFilme: '<b>No trajectory recorded yet.</b> When there is one (ASE .traj, ORCA _trj.xyz, CP2K -pos-1.xyz, OUTCAR, Gaussian log...), regenerate the dashboard and the movie appears here.',
+  otim: 'Optimization', tocar: '▶ play', pausarF: '❚❚ pause', quadro: 'frame', amostrados: 'Frames sampled (at most 60 per optimization), always including the first and last.', omitidas: 'trajectory(ies) omitted to keep the file light.',
+  energia: 'energy', passoAc: 'step', unidadeTodo: 'Energy unit (applies to the whole page)', conversao: '1 eV = 96.485 kJ/mol = 23.061 kcal/mol; 1 kcal/mol = 4.184 kJ/mol.',
+  variante: 'Level', comparaVar: 'Comparison between levels of theory', digitado: 'contains a number typed in the configuration', semEnergia: 'No energies to build the profile.',
+  relMin: 'relative to the most stable', clicaExpl: 'click to open in the Explorer', referencia: 'Reference', dif: 'difference', legTol: 'Colour of the difference to the reference: green within the 1st tolerance, yellow within the 2nd, red beyond.',
+  medida: 'Measure', semMedidas: 'No measure could be resolved in the structures.', geoInicial: 'initial geometry', geoFinal: 'final',
+  exploratorio: 'EXPLORATORY — preliminary result, not a conclusion.', imag: 'imaginary frequency(ies)', imagTxt: 'The geometry is not a true minimum along these modes (or there is numerical noise); treat low frequencies with care.',
+  zpe: 'Zero-point energy (ZPE)', zpeT: 'follows the unit chosen at the top', validacao: 'Validation against the reference', mae: 'mean absolute error (MAE)', maxErr: 'max error', modo: 'Mode', calc: 'computed', refCol: 'reference',
+  legFreqTol: 'Colour of the difference: green within the 1st tolerance, yellow within the 2nd, red beyond. Computed mode = nearest frequency (assignment by proximity, not symmetry).',
+  consol: 'MLIP × DFT consolidation', consolT: 'mean difference between nearest-frequency modes', escolhaModo: 'Pick a mode', modoAnt: '◀ previous mode', modoProx: 'next mode ▶', animar: 'animate',
+  freqImagTit: 'Imaginary frequency', freqImagTxt: 'A negative wavenumber means the geometry is not a minimum along this mode (or numerical noise).', fonte: 'class', semModos: 'The displacements of this mode are not in the file (omitted for size or not saved).',
+  linhasLig: 'Dotted lines link nearest-frequency modes between compared systems.', classeMl: 'MLIP', classeQm: 'quantum',
+  lidoEm: 'Read on', critScf: 'criterion', convCol: 'convergence', soInfo: '(informative only)', iterScf: 'SCF iteration', iterLidas: 'iterations read in the last cycle', convergiuScf: 'converged', naoConvergiu: 'not converged yet',
+  etaScf: 'estimate: ~{a} iterations left, about {m} min to reach the criterion', semEta: 'no estimate (convergence is not decreasing)', jaAbaixo: 'already below the criterion in this run', porIter: 'per iteration',
+  energiaFinal: 'final energy', energiaUlt: 'last energy read', atividade: 'Recent queue activity', semFila: 'No external calculation configured.', abortou: 'The previous attempt aborted (history of this run).', inicio: 'start',
+  maquina: 'Machine', avisos: 'Reading warnings', avisosT: 'files that could not be read or suspicious combinations; the dashboard goes on with the rest.',
+  ampliar: '🔍 Zoom', ampliarT: 'open full screen with every analysis option', painelZ: '☰ panel', novaAba: '↗ new tab', fechar: '× close',
+  zEstr: 'structure', zVib: 'vibration', zFilme: 'movie', zExib: 'Display', zFundo: 'Background', zFundoAuto: 'follows theme', claro: 'light', escuro: 'dark', zComp: 'Components', zCorTodos: 'colour every atom with the component colour',
+  zIsolar: 'isolate', zNenhum: '— none —', zViz: 'neighbours within', zMedidas: 'Configured measures', zMostrarMed: 'show centroids, normals and labels', zNormais: 'plane normals',
+  zCont: 'Contacts and labels', zContChk: 'contacts of component', zAbaixo: 'below', zRot: 'atom labels (element + index)', zHover: 'Hover an atom to see element, index and molecule.',
+  zMedInt: 'Click measurements', zMedir: 'Measure', zDist: 'distance (2 atoms)', zAng: 'angle (3 atoms)', zDih: 'dihedral (4 atoms)', zLimpar: 'clear measures', zMedVazio: 'Pick the type and click the atoms in order.',
+  zModos: 'Vibrational modes', zAmp: 'Amplitude', zSetas: 'arrows', zVista: 'View and export', zAoLongo: 'along', zPerp: '⟂ to the plane of the 1st measure', zReset: 'reset view', zPng: 'PNG (high resolution)',
+  zSemVib: 'No frequency data for this structure.', zSemFilme: 'No trajectory recorded for this structure.', zContatos: 'contacts', zLimite: '(display limit)', zSemCel: 'No cell: a CIF needs a unit cell.',
+  semWebgl: '3D viewer unavailable in this browser (WebGL disabled).', molecula: 'molecule', semComp: 'no component',
+  rodape: 'Read-only dashboard generated by the painel-calculos skill: it never changes any result. 3Dmol.js and plotly.js embedded (works offline).',
+  ciclo: 'Cycle', parcelas: 'Terms', porPadrao: 'per', expr: 'expression', erroBarra: 'spread between replicas', n: 'n',
+}};
+const t = k => (I18N[LANG][k] != null ? I18N[LANG][k] : (I18N.pt[k] != null ? I18N.pt[k] : k));
+const lead = k => (D.meta.textos && D.meta.textos[k]) || t('l_' + k);
+const NR = LANG === 'en' ? 'not recorded' : 'não registrado';
+
+/* ---------- unidades ---------- */
+const EV = 96.48533212, KCAL = 4.184;
+const LSK = 'painel_calculos:' + D.meta.id + ':';
+function lsGet(k, d) { try { const v = localStorage.getItem(LSK + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(LSK + k, JSON.stringify(v)); } catch (e) { /* sem armazenamento */ } }
+let UN = (() => { try { return localStorage.getItem('painel_calculos:unidade') || D.meta.unidade || 'kj'; } catch (e) { return D.meta.unidade || 'kj'; } })();
+const cv = x => x == null ? null : (UN === 'kj' ? x * EV : (UN === 'kcal' ? x * EV / KCAL : x));
+const un = () => UN === 'kj' ? 'kJ/mol' : (UN === 'kcal' ? 'kcal/mol' : 'eV');
+const dig = () => UN === 'kj' ? 1 : (UN === 'kcal' ? 2 : 3);
+const digAbs = () => UN === 'ev' ? 3 : 0;
+const LOC = LANG === 'en' ? 'en-US' : 'pt-BR';
+const fmt = (x, d = 2) => (x == null || isNaN(x)) ? '—' : Number(x).toLocaleString(LOC, {minimumFractionDigits: d, maximumFractionDigits: d});
+const sgn = (x, d = 2) => (x == null || isNaN(x)) ? '—' : (x > 0 ? '+' : (x < 0 ? '−' : '')) + fmt(Math.abs(x), d);
+function enSpan(ev, rel) { return ev == null ? '—' : `<span class="en" data-ev="${ev}" data-rel="${rel ? 1 : 0}">${rel ? sgn(cv(ev), dig()) : fmt(cv(ev), digAbs())}</span> <span class="enu">${un()}</span>`; }
+function atualizarEnergias() {
+  document.querySelectorAll('.en').forEach(e => { const v = cv(+e.dataset.ev); e.textContent = e.dataset.rel === '1' ? sgn(v, dig()) : (e.dataset.rel === 'z' ? fmt(v, UN === 'ev' ? 4 : 2) : fmt(v, digAbs())); });
+  document.querySelectorAll('.enu').forEach(e => { e.textContent = un(); });
+}
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]));
+const ESTCLS = s => s === 'concluido' ? 'ok' : (s === 'rodando' ? 'run' : (s === 'falhou' ? 'bad' : (s === 'parado' || s === 'parcial' ? 'warn' : '')));
+const pill = s => `<span class="pill ${ESTCLS(s)}">${t(s) || s}</span>`;
+const EST = Object.fromEntries(D.est.map(e => [e.id, e]));
+const seloCls = s => /fairchem|uma|mace|chgnet|mlip|sevenn|orb|mattersim/i.test(s || '') ? 'ml' : (/orca|cp2k|vasp|gaussian|espresso|pw\.x|psi4|pyscf|turbomole/i.test(s || '') ? 'qm' : '');
+const seloHtml = s => `<span class="selo ${seloCls(s)}">${esc(s || NR)}</span>`;
+const srcHtml = (rot, s) => `<div class="src"><b>${rot}:</b> ${esc(s || NR)}</div>`;
+function volume(c) { return Math.abs(c[0]*(c[4]*c[8]-c[5]*c[7]) - c[1]*(c[3]*c[8]-c[5]*c[6]) + c[2]*(c[3]*c[7]-c[4]*c[6])); }
+function plotLayout(T, extra) {
+  ['xaxis', 'yaxis'].forEach(k => { if (extra[k] && typeof extra[k].title === 'string') extra[k].title = {text: extra[k].title, standoff: 8}; });
+  return Object.assign({paper_bgcolor: T.bg, plot_bgcolor: T.bg, font: {color: T.ink, size: 13, family: 'system-ui,Segoe UI,Roboto,sans-serif'}, margin: {l: 70, r: 20, t: 20, b: 50}}, extra);
+}
+function temaPlot() { return {ink: css('--ink'), grid: css('--line'), bg: 'rgba(0,0,0,0)'}; }
+const PCFG = {displayModeBar: false, responsive: true};
+const temPlotly = typeof Plotly !== 'undefined';
+function plot(id, tr, lay) { if (!temPlotly || !$(id)) return Promise.resolve(null); return Plotly.react(id, tr, lay, PCFG); }
+
+/* ---------- cabeçalho e seções ---------- */
+$('titulo').textContent = D.meta.titulo;
+$('subtitulo').innerHTML = D.meta.subtitulo ? esc(D.meta.subtitulo) : '';
+$('gerado_l').innerHTML = `${t('gerado')} <b>${D.meta.gerado}</b>${D.meta.rotulo ? ' · ' + esc(D.meta.rotulo) : ''} · ${D.meta.recarga_s > 0 ? t('atualiza') + ' (' + Math.round(D.meta.recarga_s / 60 * 10) / 10 + ' min)' : t('semAuto')}`;
+$('tema').textContent = t('tema'); $('rodape').textContent = t('rodape');
+const TEM = {
+  aqui: D.etapas.length > 0 || D.andamento.length > 0,
+  reac: (D.reacao.reagentes.length + D.reacao.produtos.length + D.reacao.ts.length) > 0,
+  expl: D.est.length > 0, filme: D.filmes.length > 0,
+  energia: !!(D.energia && (D.energia.diagramas.length || D.energia.parcelas.length)),
+  ranking: !!(D.ranking && D.ranking.length), medidas: !!(D.medidas && Object.keys(D.medidas.val).length),
+  freq: !!(D.freq && D.freq.sistemas.length), fila: D.fila.length > 0, metodos: !!(D.metodos && D.metodos.cards.length), gloss: D.glossario.length > 0};
+const ORDEM = (D.meta.secoes && D.meta.secoes.length ? D.meta.secoes : ['aqui', 'reac', 'expl', 'filme', 'energia', 'ranking', 'medidas', 'freq', 'fila', 'metodos', 'gloss']).filter(k => TEM[k]);
+(function () {
+  const main = $('main'), nav = $('navin'), sp = nav.querySelector('.sp');
+  if (D.avisos.length) {
+    const a = el('details', 'g alerta warn', `<summary>⚠ ${t('avisos')} (${D.avisos.length})</summary><p class="cap">${t('avisosT')}</p><ul style="margin:6px 0;font-size:13.5px">${D.avisos.map(x => '<li>' + esc(x) + '</li>').join('')}</ul>`);
+    a.style.marginTop = '14px'; main.appendChild(a);
+  }
+  ORDEM.forEach((k, i) => {
+    const s = el('section'); s.id = 's_' + k;
+    s.innerHTML = `<h2>${i + 1} · ${t('s_' + k)}</h2><p class="lead">${lead(k)}</p><div id="c_${k}"></div>`;
+    main.appendChild(s);
+    const a = el('a', null, `${i + 1} · ${t('s_' + k)}`); a.href = '#s_' + k; nav.insertBefore(a, sp);
+  });
+})();
+
+/* ---------- tema ---------- */
+(function () {
+  const tm = lsGet('tema', null); if (tm) document.documentElement.setAttribute('data-theme', tm);
+  $('tema').onclick = () => {
+    const r = document.documentElement, escuro = css('--bg') === '#10141c';
+    r.setAttribute('data-theme', escuro ? 'light' : 'dark'); lsSet('tema', escuro ? 'light' : 'dark');
+    setTimeout(redesenharTudo, 30);
+  };
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => setTimeout(redesenharTudo, 30)); } catch (e) { /* antigo */ }
+})();
+
+/* ---------- 3D: núcleo ---------- */
+const ELCOR = {H: '#d9d9d9', C: '#909090', N: '#3050f8', O: '#e03030', F: '#3ed06a', S: '#e6c200', P: '#ff8000', Cl: '#1ff01f', Br: '#a62929', I: '#940094', B: '#ffb5b5', Si: '#f0c8a0', Li: '#cc80ff', Na: '#ab5cf2', K: '#8f40d4', Mg: '#8aff00', Ca: '#3dff00', Fe: '#e06633', Cu: '#c88033', Zn: '#7d80b0', Ti: '#bfc2c7', Al: '#bfa6a6', Pt: '#d0d0e0', Au: '#ffd123', Ag: '#c0c0c0', Ni: '#50d050', Co: '#f090a0', Mn: '#9c7ac7', Cr: '#8a99c7', Pd: '#006985', Ru: '#248f8f', Mo: '#54b5b5', W: '#2194d6', Zr: '#94e0e0', Ga: '#c28f8f', Ge: '#668f8f', As: '#bd80e3', Se: '#ffa100', Sn: '#668080', Pb: '#575961', Bi: '#9e4fb5', Cs: '#57178f', Ba: '#00c900', La: '#70d4ff', Ce: '#ffffc7'};
+function corEl(e) { if (ELCOR[e]) return ELCOR[e]; try { const c = $3Dmol.elementColors.Jmol[e]; if (c != null) return '#' + c.toString(16).padStart(6, '0'); } catch (x) { /* */ } return '#cccccc'; }
+const STOPS = ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c'];
+function hex2rgb(h) { return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); }
+function escala(x) {
+  x = Math.max(0, Math.min(1, x)) * (STOPS.length - 1); const i = Math.min(STOPS.length - 2, Math.floor(x)), f = x - i;
+  const a = hex2rgb(STOPS[i]), b = hex2rgb(STOPS[i + 1]);
+  return '#' + a.map((v, k) => Math.round(v + (b[k] - v) * f).toString(16).padStart(2, '0')).join('');
+}
+const CORCOMP = {};   // sobrescritas do modo Ampliar: nome do componente -> cor
+function corComp(S, k) { const c = S.comps && S.comps[k]; if (!c) return null; return CORCOMP[c.nome] || c.cor; }
+function corAtomo(a, modo, dmax, S, todos) {
+  if (modo === 'disp') return escala((a.d || 0) / dmax);
+  if (a.comp != null && a.comp >= 0 && S && S.comps && S.comps.length) {
+    const c = corComp(S, a.comp);
+    if (c && (todos || a.elem === 'C')) return c;
+  }
+  return corEl(a.elem);
+}
+function estiloDe(tipo, cf, gross) {
+  const r = gross ? 1.25 : 1;
+  if (tipo === 'oculto') return {};
+  if (tipo === 'linha') return {line: {colorfunc: cf}};
+  if (tipo === 'esfera') return {sphere: {scale: 0.75, colorfunc: cf}};
+  if (tipo === 'stick') return {stick: {radius: 0.14 * r, colorfunc: cf}};
+  return {stick: {radius: 0.14 * r, colorfunc: cf}, sphere: {scale: 0.22 * r, colorfunc: cf}};
+}
+const OPC_ESTILO = () => [['bastao', LANG === 'en' ? 'ball and stick' : 'bolas e bastões'], ['stick', LANG === 'en' ? 'sticks' : 'bastões'], ['esfera', LANG === 'en' ? 'spheres (volume)' : 'esferas (volume)'], ['linha', LANG === 'en' ? 'lines' : 'linhas'], ['oculto', LANG === 'en' ? 'hide' : 'ocultar']];
+function addBox(v, c, cor, r) {
+  const V = [[c[0], c[1], c[2]], [c[3], c[4], c[5]], [c[6], c[7], c[8]]];
+  const P = i => [0, 1, 2].map(k => (i & 1) * V[0][k] + ((i >> 1) & 1) * V[1][k] + ((i >> 2) & 1) * V[2][k]);
+  for (let i = 0; i < 8; i++) for (let b = 0; b < 3; b++) if (!((i >> b) & 1)) {
+    const s = P(i), e = P(i | (1 << b));
+    v.addCylinder({start: {x: s[0], y: s[1], z: s[2]}, end: {x: e[0], y: e[1], z: e[2]}, radius: r, color: cor, fromCap: true, toCap: true});
+  }
+}
+function cilTrac(v, a, b, cor, r) {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], Lg = Math.hypot(d[0], d[1], d[2]), n = Math.max(2, Math.round(Lg / 0.35));
+  for (let q = 0; q < n; q += 2) {
+    const t0 = q / n, t1 = Math.min(1, (q + 1) / n);
+    v.addCylinder({start: {x: a[0] + d[0] * t0, y: a[1] + d[1] * t0, z: a[2] + d[2] * t0}, end: {x: a[0] + d[0] * t1, y: a[1] + d[1] * t1, z: a[2] + d[2] * t1}, radius: r, color: cor, fromCap: true, toCap: true});
+  }
+}
+const COR_A = '#d6249f', COR_B = '#0c8599';
+function desenharMedidas(v, des, s, rotulos, normais, defs) {
+  // des: {medida_id: {pontos:[[xyz,'A'|'B']], setas:[[xyz, n, 'A'|'B']], linhas:[[p, q, valor]]}}
+  s = s || [0, 0, 0]; const xyz = a => ({x: a[0] + s[0], y: a[1] + s[1], z: a[2] + s[2]});
+  Object.entries(des || {}).forEach(([mid, d]) => {
+    const def = (defs || []).find(x => x.id === mid) || {un: '', dig: 2};
+    (d.pontos || []).forEach(([p, w]) => v.addSphere({center: xyz(p), radius: 0.17, color: w === 'A' ? COR_A : COR_B}));
+    if (normais !== false) (d.setas || []).forEach(([p, n, w]) => v.addArrow({start: xyz(p), end: xyz([p[0] + 1.4 * n[0], p[1] + 1.4 * n[1], p[2] + 1.4 * n[2]]), radius: 0.055, color: w === 'A' ? COR_A : COR_B}));
+    (d.linhas || []).forEach(([p, q, val]) => {
+      cilTrac(v, [p[0] + s[0], p[1] + s[1], p[2] + s[2]], [q[0] + s[0], q[1] + s[1], q[2] + s[2]], '#e8590c', 0.04);
+      if (rotulos && val != null) v.addLabel(fmt(val, def.un === '°' ? 1 : 2) + ' ' + def.un, {position: xyz([(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2]), fontSize: 12, fontColor: '#ffffff', backgroundColor: '#1d2433', backgroundOpacity: 0.8, showBackground: true, inFront: true});
+    });
+  });
+}
+/* camada: {S (estrutura: el, comp, comps, caixa), flat, scale, cell, disp, tipo:'normal'|'fantasma'|'disp', des} */
+function cena(v, spec) {
+  if (!v) return;
+  const manter = spec.manter ? v.getView() : null;
+  v.removeAllModels(); v.removeAllShapes(); v.removeAllLabels();
+  const [ra, rb, rc] = spec.rep || [1, 1, 1];
+  spec.camadas.forEach(Lc => {
+    const S = Lc.S, N = S.el.length, c = Lc.cell;
+    const reps = (c && !S.caixa) ? [ra, rb, rc] : [1, 1, 1];
+    const linhas = [], trans = [];
+    for (let i = 0; i < reps[0]; i++) for (let j = 0; j < reps[1]; j++) for (let k = 0; k < reps[2]; k++) {
+      const s = c ? [0, 1, 2].map(q => i * c[q] + j * c[3 + q] + k * c[6 + q]) : [0, 0, 0];
+      trans.push(s);
+      for (let a = 0; a < N; a++) linhas.push(`${S.el[a]} ${(Lc.flat[3*a]/Lc.scale + s[0]).toFixed(3)} ${(Lc.flat[3*a+1]/Lc.scale + s[1]).toFixed(3)} ${(Lc.flat[3*a+2]/Lc.scale + s[2]).toFixed(3)}`);
+    }
+    const m = v.addModel(linhas.length + '\n\n' + linhas.join('\n'), 'xyz');
+    const at = m.selectedAtoms({});
+    for (let q = 0; q < at.length; q++) { const a = q % N; at[q].comp = S.comp ? S.comp[a] : -1; at[q].d = Lc.disp ? Lc.disp[a] / 100 : 0; }
+    const sel = x => Object.assign({model: m}, x);
+    if (Lc.tipo === 'fantasma') {
+      v.setStyle(sel({}), {stick: {radius: 0.07, color: '#8a8a8a', opacity: 0.55}});
+    } else {
+      const modo = Lc.tipo === 'disp' ? 'disp' : 'cor';
+      const cf = a => corAtomo(a, modo, spec.dmax || 1, S, spec.todos);
+      v.setStyle(sel({}), estiloDe(spec.estilo || 'bastao', cf, false));
+      if (spec.estilos && modo !== 'disp') Object.entries(spec.estilos).forEach(([k, tp]) => v.setStyle(sel({predicate: a => a.comp === +k}), estiloDe(tp, cf, false)));
+    }
+    if (!spec.H) v.setStyle(sel({elem: 'H'}), {});
+    if (spec.med && Lc.des && Lc.tipo !== 'fantasma') trans.forEach((s, q) => desenharMedidas(v, Lc.des, s, q === 0, true, D.medidas && D.medidas.defs));
+  });
+  (spec.caixas || []).forEach(b => { if (b.cell) addBox(v, b.cell, b.cor, b.r); });
+  if (manter) v.setView(manter); else v.zoomTo();
+  v.render();
+}
+function mkViewer(id, ctx) {
+  const d = $(id); if (!d) return null;
+  if (ctx) {
+    const w = el('div', 'vwrap'); d.parentNode.insertBefore(w, d); w.appendChild(d);
+    const b = el('button', 'zbtn', t('ampliar')); b.title = t('ampliarT'); b.onclick = () => abrirZoom(ctx()); w.appendChild(b);
+  }
+  try { return $3Dmol.createViewer(d, {backgroundColor: css('--vbg')}); }
+  catch (e) { d.innerHTML = `<div class="vazio" style="margin:10px">${t('semWebgl')}</div>`; return null; }
+}
+const corCaixa = () => css('--muted') || '#888';
+const desDe = (id, ini) => D.medidas ? ((ini ? D.medidas.des_ini : D.medidas.des)[id] || null) : null;
+const camada = (e, ini, tipo) => ({S: e, flat: ini ? e.ini : e.pos, scale: 1000, cell: ini ? e.cel_i : e.cel, disp: tipo === 'disp' ? e.disp : null, tipo: tipo || 'normal', des: desDe(e.id, ini)});
+function dispMax(e) { const d = e.disp.slice().sort((a, b) => a - b); return Math.max(0.05, (d[Math.floor(d.length * 0.99)] || 0) / 100); }
+function legendaComps(S) {
+  if (!S.comps || !S.comps.length) return '';
+  return '<div class="cap">' + S.comps.map((c, k) => `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${corComp(S, k)};margin:0 4px 0 8px"></span>${esc(c.nome)}`).join('') + (LANG === 'en' ? ' (carbon colour by component; other elements in CPK colours)' : ' (cor dos carbonos por componente; demais elementos nas cores usuais)') + '</div>';
+}
+
+/* ---------- 1. você está aqui ---------- */
+function etaTxt(e) {
+  if (!e) return '';
+  const m = e.s / 60, txt = m < 1 ? (LANG === 'en' ? 'less than 1 min' : 'menos de 1 min') : (m < 90 ? fmt(m, 0) + ' min' : fmt(m / 60, 1) + ' h');
+  const base = e.base === 'duracao' ? `${t('ritmo')}: ${fmt(e.mediana_s / 60, 1)} min ${t('porCalc')} ${e.n} ${t('calcs')}` : `${t('intervalo')}: ${fmt(e.mediana_s / 60, 1)} min`;
+  return `<div><b>${t('eta')}:</b> ${t('faltam')} ~${txt}<div class="nota">${base}</div></div>`;
+}
+function secAqui() {
+  const box = $('c_aqui'); if (!box) return;
+  const fl = el('div', 'flow'); box.appendChild(fl);
+  const primeiraAberta = D.etapas.findIndex(e => e.estado !== 'concluido');
+  D.etapas.forEach((e, i) => {
+    if (i) fl.appendChild(el('div', 'arrow', '→'));
+    const cls = e.estado === 'concluido' ? 'ok' : (e.estado === 'rodando' ? 'run' : (e.estado === 'falhou' ? 'bad' : ''));
+    const n = el('div', 'node ' + cls);
+    let h = i === primeiraAberta ? `<div class="here">${t('aqui')}</div>` : '';
+    h += `${pill(e.estado)} <span class="cap">${esc(e.id)}</span><h3>${esc(e.nome)}</h3>`;
+    if (e.total) {
+      const p = Math.min(100, 100 * e.feito / e.total);
+      h += `<div class="bar"><i style="width:${p}%"></i></div><div><b>${e.feito}</b> ${t('de')} ${e.total}${e.rodando ? ' · ' + e.rodando + ' ' + t('rodando') : ''}${e.falhou ? ' · <span style="color:var(--bad)">' + e.falhou + ' ' + t('falhou') + '</span>' : ''}</div>`;
+    }
+    h += etaTxt(e.eta);
+    if (e.nota) h += `<div class="nota">${esc(e.nota)}</div>`;
+    const deps = (e.depende_de || []).filter(d => d !== (D.etapas[i - 1] || {}).id);
+    if (deps.length) h += `<div class="dep">↳ ${t('depende')} ${deps.map(esc).join(', ')}</div>`;
+    if (e.selo) h += srcHtml(t('calculadoCom'), e.selo);
+    if (e.ts) h += `<div class="nota">${t('ultima')}: ${e.ts}</div>`;
+    n.innerHTML = h; fl.appendChild(n);
+  });
+  const a = el('div'); box.appendChild(a);
+  if (!D.andamento.length && D.etapas.length) a.appendChild(el('p', 'cap', t('semAndamento')));
+  D.andamento.forEach(r => {
+    const d = el('div', 'live');
+    d.innerHTML = `<span class="dot"></span><b>${t('rodandoAgora')}${esc(r.nome)}</b><span>${r.fase ? t('fase') + ' ' + esc(r.fase) + ' · ' : ''}${t('passo')} <b>${r.passo ?? '—'}</b> · E = <b>${fmt(r.E, 4)}</b> eV · fmax = ${fmt(r.fmax, 3)} eV/Å${r.sig != null ? ' · σ = ' + fmt(r.sig, 3) + ' GPa' : ''}</span>`;
+    a.appendChild(d);
+  });
+  const foco = D.fila.filter(j => j.estado === 'rodando' || j.estado === 'falhou' || j.abortou);
+  if (foco.length) {
+    box.appendChild(el('h3', null, t('s_fila') + ' — ' + t('rodando') + ' / ' + t('falhou')));
+    const w = el('div', 'chips'); box.appendChild(w);
+    foco.forEach((j, k) => w.appendChild(jobCard(j, 'aq' + k)));
+  }
+}
+
+/* ---------- 2. reagentes -> produtos ---------- */
+const V2 = [];
+function secReac() {
+  const box = $('c_reac'); if (!box) return;
+  const allc = [...new Set(D.reacao.reagentes.concat(D.reacao.ts, D.reacao.produtos).flatMap(id => (EST[id].comps || []).map(c => c.nome)))];
+  box.innerHTML = `<div class="card ctrl"><label>${t('supercel')} <select id="rep2"><option value="1,1,1">1×1×1</option><option value="2,2,1">2×2×1</option><option value="2,2,2">2×2×2</option></select></label>
+    <label>${t('estilo')} <select id="est2">${OPC_ESTILO().filter(o => o[0] !== 'oculto').map(([v, x]) => `<option value="${v}">${x}</option>`).join('')}</select></label>
+    <label><input type="checkbox" id="h2" checked> ${t('hidrog')}</label><label><input type="checkbox" id="box2" checked> ${t('caixa')}</label>
+    ${D.medidas ? `<label><input type="checkbox" id="med2" checked> ${t('medidasChk')}</label>` : ''}<label><input type="checkbox" id="spin2"> ${t('girar')}</label></div><div class="grid g4" id="reag"></div>`;
+  const g = $('reag');
+  const itens = [].concat(D.reacao.reagentes.map((id, k) => [id, (k ? '+ ' : '') + '①②③④⑤⑥⑦⑧'[k], 'reagente']),
+    D.reacao.ts.map(id => [id, '‡', 'ts']), D.reacao.produtos.map((id, k) => [id, (k ? (LANG === 'en' ? 'or ' : 'ou ') : '→ ') + 'ⓐⓑⓒⓓⓔⓕⓖ'[k], 'produto']));
+  itens.forEach(([id, simb, papel]) => {
+    const e = EST[id], c = el('div', 'card');
+    c.innerHTML = `<div class="head3d"><b>${simb} ${esc(e.nome)}</b><span>${t(papel)}</span></div><div class="v3d" id="v2_${id}"></div><div id="c2_${id}"></div>`;
+    g.appendChild(c);
+    let h = legendaComps(e) + '<div class="kv">';
+    h += `<div><small>${t('energiaTotal')}</small><b>${enSpan(e.E, false)}</b></div>`;
+    if (e.n_fu > 1) h += `<div><small>${t('porFU')} (${fmt(e.n_fu, 0)} ${e.rotulo_fu || 'FU'})</small><b>${enSpan(e.E / e.n_fu, false)}</b></div>`;
+    if (!e.caixa && e.cp && e.cp_i) {
+      const nomes = [['a', 'Å'], ['b', 'Å'], ['c', 'Å'], ['α', '°'], ['β', '°'], ['γ', '°']];
+      const dv = (i, f, u, dd) => { const p = i ? (f - i) / i * 100 : null; return `<div><small>${u[0]} ${t('inicial')} → ${t('final')}</small>${fmt(i, dd)} → <b>${fmt(f, dd)}</b> ${u[1]}<span class="d"> (${sgn(p, 2)}%)</span></div>`; };
+      nomes.forEach((n, i) => { h += dv(e.cp_i[i], e.cp[i], n, 3); });
+      h += dv(volume(e.cel_i), volume(e.cel), ['V', 'Å³'], 1);
+    }
+    h += kvComuns(e) + '</div>';
+    h += `<div class="src"><b>${t('calculadoCom')}:</b> ${seloHtml(e.selo)}<br><b>${t('arquivo')}:</b> ${esc(e.arquivo)}${e.inicial ? '<br><b>' + t('geomIni') + ':</b> ' + esc(e.inicial) : ''}</div>`;
+    $('c2_' + id).innerHTML = h;
+    V2.push({id, e, v: mkViewer('v2_' + id, () => ({est: id}))});
+  });
+  const redes = () => {
+    const [a, b, cc] = $('rep2').value.split(',').map(Number);
+    V2.forEach(d => cena(d.v, {camadas: [camada(d.e, false)], rep: [a, b, cc], med: $('med2') && $('med2').checked, estilo: $('est2').value, H: $('h2').checked, manter: d.ini,
+      caixas: $('box2').checked && !d.e.caixa ? [{cell: d.e.cel, cor: corCaixa(), r: 0.06}] : []}));
+    V2.forEach(d => { d.ini = true; });
+  };
+  ['rep2', 'est2', 'h2', 'box2', 'med2'].forEach(i => { if ($(i)) $(i).onchange = () => { redes(); salvarEstado(); }; });
+  $('spin2').onchange = () => V2.forEach(d => d.v && d.v.spin($('spin2').checked));
+  window.__redes2 = redes; redes();
+}
+function kvComuns(e) {
+  let h = '';
+  if (e.passos != null) h += `<div><small>${t('passos')}</small><b>${e.passos}</b></div>`;
+  if (e.fmax != null) h += `<div><small>${t('fmaxF')}</small><b>${fmt(e.fmax, 4)}</b> eV/Å</div>`;
+  if (e.sig != null && !e.caixa) h += `<div><small>${t('sigF')}</small><b>${fmt(e.sig, 4)}</b> GPa</div>`;
+  if (e.conv != null) h += `<div><small>${t('conv')}</small><b style="color:${e.conv ? 'var(--ok)' : 'var(--bad)'}">${e.conv ? t('sim') : t('nao')}</b></div>`;
+  h += `<div><small>${t('estado')}</small>${pill(e.estado)}</div>`;
+  if (e.t != null) h += `<div><small>${t('tempo')}</small>${e.t < 120 ? fmt(e.t, 0) + ' s' : fmt(e.t / 60, 1) + ' min'}</div>`;
+  return h;
+}
+
+/* ---------- 3. explorador ---------- */
+const EX = {v: null, modo: 'final'};
+function nomeOpt(e) { return e.nome; }
+function secExpl() {
+  const box = $('c_expl'); if (!box) return;
+  box.innerHTML = `<div class="card ctrl"><label>${t('estrutura')} <select id="e_sis"></select></label>
+    <span class="seg" id="e_modo"><button data-m="final" class="on">${t('final')}</button><button data-m="ini">${t('inicial')}</button><button data-m="sob">${t('sob')}</button><button data-m="disp">${t('disp')}</button></span>
+    <label>${t('supercel')} <select id="e_rep"><option value="1,1,1">1×1×1</option><option value="2,2,1">2×2×1</option><option value="2,2,2">2×2×2</option></select></label>
+    <label><input type="checkbox" id="e_h" checked> ${t('hidrog')}</label>${D.medidas ? `<label><input type="checkbox" id="e_med" checked> ${t('medidasChk')}</label>` : ''}</div>
+    <div class="grid g2" style="grid-template-columns:minmax(0,2fr) minmax(300px,1fr)"><div><div class="v3d big" id="v_exp"></div>
+    <div id="e_cbar" style="display:none;margin-top:8px"><div class="cbar"></div><div><span>0 Å</span><span id="e_dmax"></span></div><p class="cap">${t('corDesl')}</p></div></div>
+    <div class="card"><div class="head3d"><b id="e_tit"></b></div><div id="e_info"></div><div id="e_med"></div><div id="e_src"></div></div></div>`;
+  const s = $('e_sis'), grupos = {};
+  D.est.forEach(e => { (grupos[e.grupo || ''] = grupos[e.grupo || ''] || []).push(e); });
+  Object.entries(grupos).forEach(([g, L]) => {
+    const pai = g ? el('optgroup') : s; if (g) { pai.label = g; s.appendChild(pai); }
+    L.forEach(e => { const o = el('option', null, esc(nomeOpt(e))); o.value = e.id; pai.appendChild(o); });
+  });
+  EX.v = mkViewer('v_exp', () => ({est: $('e_sis').value, modo: EX.modo}));
+  s.onchange = () => { exploradorRender(false); salvarEstado(); };
+  ['e_rep', 'e_h', 'e_med'].forEach(i => { if ($(i)) $(i).onchange = () => { exploradorRender(true); salvarEstado(); }; });
+  document.querySelectorAll('#e_modo button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#e_modo button').forEach(x => x.classList.remove('on')); b.classList.add('on'); EX.modo = b.dataset.m; exploradorRender(true); salvarEstado();
+  });
+  const pref = D.reacao.produtos[0] || D.reacao.reagentes[0]; if (pref) s.value = pref;
+  exploradorRender(false);
+}
+function exploradorRender(manter) {
+  const e = EST[$('e_sis').value]; if (!e) return;
+  const modo = EX.modo, [a, b, c] = $('e_rep').value.split(',').map(Number);
+  const cam = [], caixas = [], cor = corCaixa(), dmax = dispMax(e);
+  if (modo === 'ini') { cam.push(camada(e, true)); caixas.push({cell: e.cel_i, cor, r: .06}); }
+  else if (modo === 'final') { cam.push(camada(e, false)); caixas.push({cell: e.cel, cor, r: .06}); }
+  else if (modo === 'sob') { cam.push(camada(e, true, 'fantasma')); cam.push(camada(e, false)); caixas.push({cell: e.cel, cor, r: .06}, {cell: e.cel_i, cor: '#999', r: .025}); }
+  else { cam.push(camada(e, false, 'disp')); caixas.push({cell: e.cel, cor, r: .06}); }
+  if (e.caixa) caixas.length = 0;
+  $('e_cbar').style.display = modo === 'disp' ? 'block' : 'none'; $('e_dmax').textContent = fmt(dmax, 2) + ' Å';
+  cena(EX.v, {camadas: cam, rep: [a, b, c], H: $('e_h').checked, med: $('e_med') && $('e_med').checked, caixas, dmax, manter});
+  $('e_tit').textContent = e.nome;
+  let h = legendaComps(e) + '<div class="kv">';
+  h += `<div><small>${t('energiaTotal')}</small><b>${enSpan(e.E, false)}</b></div>`;
+  if (e.n_fu > 1) h += `<div><small>${t('porFU')}</small><b>${enSpan(e.E / e.n_fu, false)}</b></div>`;
+  h += kvComuns(e);
+  if (!e.caixa && e.cel && e.cel_i) h += `<div><small>${t('volume')}</small>${fmt(volume(e.cel_i), 1)} → <b>${fmt(volume(e.cel), 1)}</b> Å³</div>`;
+  h += `<div><small>${t('maiorDesl')}</small>${fmt(Math.max(0, ...e.disp) / 100, 2)} Å</div></div>`;
+  $('e_info').innerHTML = h;
+  $('e_med').innerHTML = medidasLista(e.id, modo === 'ini');
+  $('e_src').innerHTML = `<div class="src"><b>${t('calculadoCom')}:</b> ${seloHtml(e.selo)}<br><b>${t('arquivo')}:</b> ${esc(e.arquivo)}${e.inicial ? '<br><b>' + t('geomIni') + ':</b> ' + esc(e.inicial) : ''}${e.nota ? '<br>' + esc(e.nota) : ''}</div>`;
+}
+function abrirNoExplorador(id) {
+  if (!EST[id] || !$('e_sis')) return;
+  $('e_sis').value = id; exploradorRender(false); $('s_expl').scrollIntoView({behavior: 'smooth'});
+}
+
+/* ---------- medidas (lista, tabela e gráfico) ---------- */
+function tolCls(d, tol) { if (d == null || !tol) return ''; const a = Math.abs(d); return a <= tol[0] ? 'ok' : (a <= (tol[1] ?? tol[0] * 2.5) ? 'warn' : 'bad'); }
+const refDe = (m, id) => (m.aplicar_a && id && !m.aplicar_a.includes(id)) ? null : m.ref;
+function deltaChip(v, ref, m) { if (v == null || ref == null) return ''; const d = v - ref; return `<span class="dl ${tolCls(d, m.tol)}" title="${t('dif')}">${sgn(d, m.dig)}</span>`; }
+function medidasLista(id, ini) {
+  if (!D.medidas || !D.medidas.val[id]) return '';
+  let h = `<h4 style="margin:14px 0 2px">${t('s_medidas')}</h4><div class="med">`;
+  D.medidas.defs.forEach(m => {
+    const v = D.medidas.val[id][m.id]; if (!v) return;
+    const x = ini ? v.i : v.f, rf = refDe(m, id);
+    h += `<div class="it ${tolCls(rf != null && x != null ? x - rf : null, m.tol)}"><b>${esc(m.nome)}: ${fmt(x, m.dig)} ${m.un} ${deltaChip(x, rf, m)}</b><span>${rf != null ? t('referencia') + ' ' + fmt(m.ref, m.dig) + ' ' + m.un + (m.ref_fonte ? ' (' + esc(m.ref_fonte) + ')' : '') : ''}${v.lista && v.lista.length > 1 ? ' · ' + v.lista.map(q => fmt(q, m.dig)).join(' / ') : ''}</span></div>`;
+  });
+  return h + `</div><p class="cap">${ini ? t('geoInicial') : t('geoFinal')}. ${LANG === 'en' ? 'Spheres: centroids (magenta = A, teal = B); dashed: measured line; arrows: plane normals.' : 'Esferas: centroides (magenta = A, azul-petróleo = B); tracejado: a linha medida; setas: normais dos planos.'}</p>`;
+}
+function secMedidas() {
+  const box = $('c_medidas'); if (!box) return;
+  const ids = D.est.map(e => e.id).filter(id => D.medidas.val[id]);
+  const cols = ids.slice(0, 40);
+  let h = `<div class="card"><div class="tabw"><div class="tab" style="grid-template-columns:minmax(200px,1.6fr) minmax(110px,1fr) repeat(${cols.length},minmax(110px,1fr))"><div class="gh">${t('medida')}</div><div class="gh">${t('referencia')}</div>` + cols.map(id => `<div class="gh" style="cursor:pointer" title="${t('clicaExpl')}" onclick="abrirNoExplorador('${id}')">${esc(EST[id].nome)}</div>`).join('');
+  D.medidas.defs.forEach(m => {
+    h += `<div class="gl"><b>${esc(m.nome)}</b><span>${esc(m.expl || '')}</span></div><div class="sv">${m.ref != null ? '<b>' + fmt(m.ref, m.dig) + '</b> ' + m.un : '—'}<span class="d">${esc(m.ref_fonte || '')}</span></div>`;
+    cols.forEach(id => { const v = (D.medidas.val[id] || {})[m.id]; h += `<div class="sv">${v && v.f != null ? '<b>' + fmt(v.f, m.dig) + '</b> ' + m.un + deltaChip(v.f, refDe(m, id), m) : '—'}</div>`; });
+  });
+  h += `</div></div><p class="cap">${t('legTol')}</p></div>`;
+  h += `<div class="card" style="margin-top:14px"><div class="head3d"><b>${t('medida')}</b><select id="med_sel">${D.medidas.defs.map(m => `<option value="${m.id}">${esc(m.nome)}</option>`).join('')}</select><span>${LANG === 'en' ? 'each point is a structure (circle = final, diamond = initial); the dashed line is the reference' : 'cada ponto é uma estrutura (círculo = final, losango = inicial); a linha tracejada é a referência'}</span></div><div id="p_med" class="plot" style="height:${Math.max(260, 26 * ids.length + 90)}px"></div></div>`;
+  box.innerHTML = h;
+  $('med_sel').onchange = desenharMedChart;
+  desenharMedChart();
+}
+function desenharMedChart() {
+  if (!$('med_sel')) return;
+  const m = D.medidas.defs.find(x => x.id === $('med_sel').value), T = temaPlot();
+  const ids = D.est.map(e => e.id).filter(id => (D.medidas.val[id] || {})[m.id]);
+  const nomes = ids.map(id => EST[id].nome), f = ids.map(id => D.medidas.val[id][m.id].f), i = ids.map(id => D.medidas.val[id][m.id].i);
+  const tr = [{type: 'scatter', mode: 'markers', name: t('final'), y: nomes, x: f, customdata: ids, marker: {color: css('--acc'), size: 11}, hovertemplate: '%{y}<br>%{x:.' + m.dig + 'f} ' + m.un + '<extra></extra>'},
+    {type: 'scatter', mode: 'markers', name: t('inicial'), y: nomes, x: i, customdata: ids, marker: {color: css('--acc2'), size: 9, symbol: 'diamond-open'}, hovertemplate: '%{y}<br>%{x:.' + m.dig + 'f} ' + m.un + '<extra>' + t('inicial') + '</extra>'}];
+  const shapes = [], an = [];
+  if (m.ref != null) {
+    if (m.tol) shapes.push({type: 'rect', xref: 'x', yref: 'paper', x0: m.ref - m.tol[0], x1: m.ref + m.tol[0], y0: 0, y1: 1, fillcolor: 'rgba(31,157,85,.15)', line: {width: 0}, layer: 'below'});
+    shapes.push({type: 'line', xref: 'x', yref: 'paper', x0: m.ref, x1: m.ref, y0: 0, y1: 1, line: {color: css('--ok'), dash: 'dash', width: 2}});
+    an.push({x: m.ref, y: 1, yref: 'paper', text: t('referencia') + ' ' + fmt(m.ref, m.dig), showarrow: false, yshift: 12, font: {size: 12, color: css('--ok')}});
+  }
+  plot('p_med', tr, plotLayout(T, {xaxis: {title: m.nome + ' (' + m.un + ')', gridcolor: T.grid}, yaxis: {automargin: true, autorange: 'reversed', gridcolor: T.grid}, shapes, annotations: an, legend: {orientation: 'h', y: 1.0, yanchor: 'bottom', x: 1, xanchor: 'right'}, margin: {l: 20, r: 20, t: 50, b: 50}}))
+    .then(gd => { if (!gd) return; gd.removeAllListeners && gd.removeAllListeners('plotly_click'); gd.on('plotly_click', ev => abrirNoExplorador(ev.points[0].customdata)); });
+}
+
+/* ---------- 4. filme ---------- */
+const FI = {v: null, f: null, i: 0, timer: null};
+function filmeSerieX(F, q) { const s = F.serie; if (!s) return null; const n = s.E.length; return Math.round(F.idx[q] * (n - 1) / Math.max(1, F.quadros_originais - 1)); }
+function secFilme() {
+  const box = $('c_filme'); if (!box) return;
+  box.innerHTML = `<div class="card ctrl"><label>${t('otim')} <select id="f_sel"></select></label><button class="btn pri" id="f_play">${t('tocar')}</button><input type="range" id="f_sl" min="0" max="0" value="0" style="flex:1;min-width:160px"><span id="f_info"></span></div>
+    <div class="grid g2"><div class="v3d big" id="v_film" style="height:480px"></div><div><div id="f_E" class="plot s"></div><div id="f_F" class="plot s"></div><div id="f_S" class="plot s"></div></div></div>
+    <div id="f_src"></div><p class="cap">${D.filmes_omitidos ? D.filmes_omitidos + ' ' + t('omitidas') + ' ' : ''}${t('amostrados')}</p>`;
+  const s = $('f_sel'); D.filmes.forEach(f => { const o = el('option', null, esc(f.nome) + (f.viva ? ' (' + t('rodando') + ')' : '')); o.value = f.id; s.appendChild(o); });
+  FI.v = mkViewer('v_film', () => ({aba: 'filme', filme: FI.f.id, quadro: FI.i, est: FI.f.est}));
+  s.onchange = () => { filmeEscolher(s.value); salvarEstado(); };
+  $('f_sl').oninput = () => filmeQuadro(+$('f_sl').value);
+  $('f_play').onclick = () => {
+    if (FI.timer) { clearInterval(FI.timer); FI.timer = null; $('f_play').textContent = t('tocar'); return; }
+    $('f_play').textContent = t('pausarF');
+    FI.timer = setInterval(() => filmeQuadro((FI.i + 1) % FI.f.idx.length), 170);
+  };
+  filmeEscolher(D.filmes[0].id);
+}
+function filmeS(F) { return F.est && EST[F.est] ? EST[F.est] : {el: F.el, comp: null, comps: [], caixa: !F.cells[0]}; }
+function filmeGraficos() {
+  const F = FI.f, T = temaPlot(), s = F.serie;
+  const x = s.E.map((_, k) => s.passo[k] != null ? s.passo[k] : k);
+  const mk = (id, y, cor, yt, log) => {
+    if (!y || !y.some(v => v != null)) { $(id).style.display = 'none'; return; }
+    $(id).style.display = '';
+    plot(id, [{x, y, mode: 'lines+markers', line: {color: cor, width: 2}, marker: {size: 4}, text: s.fase.map((f, k) => (f ? f + ', ' : '') + t('passo') + ' ' + x[k]), hovertemplate: '%{text}<br>%{y:.5g}<extra></extra>'},
+      {x: [x[0]], y: [y[0]], mode: 'markers', marker: {size: 13, color: css('--acc2'), line: {color: '#fff', width: 2}}, hoverinfo: 'skip'}],
+      plotLayout(T, {yaxis: {title: yt, gridcolor: T.grid, type: log ? 'log' : 'linear', exponentformat: 'power'}, xaxis: {title: t('passoAc'), gridcolor: T.grid}, showlegend: false, height: 210, margin: {l: 85, r: 12, t: 8, b: 40}}));
+  };
+  mk('f_E', s.E, css('--acc'), t('energia') + ' (eV)');
+  mk('f_F', s.fmax, css('--acc2'), 'fmax (eV/Å)', true);
+  mk('f_S', s.sig, css('--ok'), (LANG === 'en' ? 'max σ' : 'σ máx') + ' (GPa)');
+}
+function filmeQuadro(q) {
+  const F = FI.f; FI.i = q; $('f_sl').value = q;
+  const S = filmeS(F), cell = F.cells[q];
+  cena(FI.v, {camadas: [{S, flat: F.pos[q], scale: 100, cell, disp: null, tipo: 'normal'}], rep: [1, 1, 1], H: true, manter: FI.vi, caixas: cell && !S.caixa ? [{cell, cor: corCaixa(), r: .06}] : []});
+  FI.vi = true;
+  const k = filmeSerieX(F, q), s = F.serie;
+  ['f_E', 'f_F', 'f_S'].forEach((id, j) => {
+    const ys = [s.E, s.fmax, s.sig][j];
+    if (temPlotly && ys && $(id).style.display !== 'none' && ys[k] != null && $(id).data) Plotly.restyle(id, {x: [[s.passo[k] != null ? s.passo[k] : k]], y: [[ys[k]]]}, [1]);
+  });
+  $('f_info').innerHTML = `<b>${t('quadro')} ${F.idx[q] + 1} ${t('de')} ${F.quadros_originais}</b>${s.E[k] != null ? ' · E = <b>' + fmt(s.E[k], 4) + '</b> eV' : ''}${s.fmax[k] != null ? ' · fmax = ' + fmt(s.fmax[k], 3) + ' eV/Å' : ''}${s.sig[k] != null ? ' · σ = ' + fmt(s.sig[k], 3) + ' GPa' : ''}`;
+}
+function filmeEscolher(id) {
+  clearInterval(FI.timer); FI.timer = null; $('f_play').textContent = t('tocar');
+  FI.f = D.filmes.find(f => f.id === id); FI.vi = false; $('f_sel').value = id;
+  $('f_sl').max = FI.f.idx.length - 1;
+  $('f_src').innerHTML = `<div class="src"><b>${t('calculadoCom')}:</b> ${seloHtml(FI.f.selo)}</div>`;
+  filmeGraficos(); filmeQuadro(0);
+}
+
+/* ---------- 5. energia ---------- */
+let VAR = null;
+function secEnergia() {
+  const box = $('c_energia'); if (!box) return;
+  const E = D.energia; VAR = lsGet('variante', E.variantes[0]); if (!E.variantes.includes(VAR)) VAR = E.variantes[0];
+  let h = `<div class="card ctrl"><span>${t('unidadeTodo')}</span><span class="seg unseg"><button data-u="kj">kJ/mol</button><button data-u="kcal">kcal/mol</button><button data-u="ev">eV</button></span><span class="cap" style="margin:0">${t('conversao')}</span>`;
+  if (E.variantes.length > 1) h += `<span>${t('variante')}</span><span class="seg" id="var_seg">${E.variantes.map(v => `<button data-v="${esc(v)}">${esc(v)}</button>`).join('')}</span>`;
+  h += '</div>';
+  E.diagramas.forEach((dg, k) => { h += `<div class="card" style="margin-top:10px"><div class="head3d"><b>${esc(dg.titulo || '')}</b><span>${E.rotulo_por ? esc(E.rotulo_por) : ''}</span></div><div id="p_dg${k}" class="plot" style="height:430px"></div>${dg.nota ? '<p class="cap">' + esc(dg.nota) + '</p>' : ''}</div>`; });
+  h += '<div id="en_src"></div><div id="en_av"></div><div class="termos" id="termos"></div>';
+  if (E.variantes.length > 1 && E.parcelas.length) h += `<div class="card" style="margin-top:14px"><div class="head3d"><b>${t('comparaVar')}</b><span>${E.rotulo_por ? esc(E.rotulo_por) : ''}</span></div><div id="p_var" class="plot" style="height:300px"></div></div>`;
+  box.innerHTML = h;
+  document.querySelectorAll('#var_seg button').forEach(b => b.onclick = () => { VAR = b.dataset.v; lsSet('variante', VAR); desenharEnergia(); });
+  ligarUnidades();
+  desenharEnergia();
+}
+function desenharEnergia() {
+  const E = D.energia; if (!E) return;
+  document.querySelectorAll('#var_seg button').forEach(b => b.classList.toggle('on', b.dataset.v === VAR));
+  const T = temaPlot();
+  E.diagramas.forEach((dg, k) => {
+    const L = dg.niveis.map((n, i) => ({x: n.x != null ? n.x : i, y: n.ev[VAR], t: n.rotulo, cor: n.cor || (i === 0 ? css('--acc') : (i === dg.niveis.length - 1 ? css('--ok') : css('--muted')))})).filter(l => l.y != null);
+    if (!L.length) { $('p_dg' + k).innerHTML = `<div class="vazio">${t('semEnergia')}</div>`; return; }
+    const sh = [], an = [], ys = L.map(l => cv(l.y));
+    const perfil = dg.tipo === 'perfil';
+    L.forEach(l => {
+      sh.push({type: 'line', x0: l.x - .3, x1: l.x + .3, y0: cv(l.y), y1: cv(l.y), line: {color: l.cor, width: 5}});
+      an.push({x: l.x, y: cv(l.y), text: `<b>${sgn(cv(l.y), dig())}</b>`, showarrow: false, yshift: 14, font: {size: 13, color: T.ink}});
+    });
+    const tr = [{x: L.map(l => l.x), y: ys, mode: 'markers', marker: {opacity: 0}, hoverinfo: 'skip'}];
+    if (perfil) {
+      const px = [], py = [];
+      L.forEach((l, i) => { if (i) { const a = L[i - 1]; for (let q = 1; q < 20; q++) { const u = q / 20; px.push(a.x + .3 + (l.x - .3 - a.x - .3) * u); py.push(cv(a.y) + (cv(l.y) - cv(a.y)) * (3 * u * u - 2 * u * u * u)); } } px.push(l.x - .3, l.x + .3); py.push(cv(l.y), cv(l.y)); });
+      tr.push({x: px, y: py, mode: 'lines', line: {color: css('--muted'), width: 2, dash: 'dot'}, hoverinfo: 'skip'});
+    } else if (dg.ligar) for (let i = 1; i < L.length; i++) sh.push({type: 'line', x0: L[i - 1].x + .3, x1: L[i].x - .3, y0: cv(L[i - 1].y), y1: cv(L[i].y), line: {color: '#999', width: 1.4, dash: 'dot'}});
+    (dg.passos || []).forEach(p => {
+      const a = L[p.de], b = L[p.para]; if (!a || !b) return;
+      const d = cv(b.y) - cv(a.y);
+      sh.push({type: 'line', x0: a.x + .3, x1: b.x - .3, y0: cv(a.y), y1: cv(b.y), line: {color: d < 0 ? css('--neg') : css('--pos'), width: 2, dash: 'dash'}});
+      an.push({x: (a.x + b.x) / 2, y: (cv(a.y) + cv(b.y)) / 2, text: `${esc(p.rotulo || '')}<br><b>${sgn(d, dig())}</b>`, showarrow: false, font: {size: 12, color: d < 0 ? css('--neg') : css('--pos')}, bgcolor: 'rgba(127,127,127,.12)', borderpad: 3});
+    });
+    const lo = Math.min(...ys), hi = Math.max(...ys), pad = Math.max((hi - lo) * 0.25, 0.5);
+    plot('p_dg' + k, tr, plotLayout(T, {shapes: sh, annotations: an, showlegend: false,
+      xaxis: {tickmode: 'array', tickvals: L.map(l => l.x), ticktext: L.map(l => l.t), range: [Math.min(...L.map(l => l.x)) - .6, Math.max(...L.map(l => l.x)) + .6], zeroline: false, showgrid: false},
+      yaxis: {title: `${LANG === 'en' ? 'relative energy' : 'energia relativa'} (${un()}${E.rotulo_por ? ' ' + E.rotulo_por : ''})`, range: [lo - pad, hi + pad], gridcolor: T.grid, zerolinecolor: T.grid}, height: 430}));
+  });
+  const selos = E.selos[VAR] || [];
+  $('en_src').innerHTML = `<div class="src"><b>${t('calculadoCom')} (${esc(VAR)}):</b> ${selos.map(seloHtml).join(' ') || NR}</div>`;
+  $('en_av').innerHTML = (E.avisos || []).filter(a => a.includes(VAR) || E.variantes.length === 1).map(a => `<div class="alerta warn">⚠ ${esc(a)}</div>`).join('') + (E.digitados.length ? `<p class="cap">ⓘ ${t('digitado')}: ${E.digitados.map(esc).join(', ')}</p>` : '');
+  $('termos').innerHTML = '';
+  E.parcelas.forEach(p => {
+    const v = p.ev[VAR]; if (v == null && !E.variantes.some(x => p.ev[x] != null)) return;
+    let cls = p.classe; if (cls === 'auto') cls = v == null ? '' : (v > 0 ? 'pos' : 'neg');
+    const cor = cls === 'pos' ? 'var(--pos)' : (cls === 'neg' ? 'var(--neg)' : 'var(--ink)');
+    const outros = E.variantes.filter(x => x !== VAR && p.ev[x] != null).map(x => `${esc(x)}: <b>${sgn(cv(p.ev[x]), dig())}</b> ${un()}`).join('<br>');
+    $('termos').appendChild(el('div', 'termo ' + (cls === 'total' ? 'tot' : cls), `<div class="t">${esc(p.nome)}</div><div class="n" style="color:${cor}">${v == null ? '—' : sgn(cv(v), dig())} <small style="font-size:14px;font-weight:400">${un()}</small></div>${p.txt ? '<p>' + esc(p.txt) + '</p>' : ''}<div class="cap">${t('expr')}: <code>${esc(p.expr)}</code></div>${outros ? '<div class="fx">' + outros + '</div>' : ''}`));
+  });
+  if ($('p_var')) {
+    const nomes = E.parcelas.map(p => p.nome);
+    const cores = [css('--acc'), css('--ok'), css('--acc2'), '#9467bd', '#8c564b'];
+    plot('p_var', E.variantes.map((vn, k) => ({type: 'bar', name: vn, x: nomes, y: E.parcelas.map(p => cv(p.ev[vn])), marker: {color: cores[k % cores.length]}, hovertemplate: '%{x}<br>%{y:.' + dig() + 'f} ' + un() + '<extra>' + esc(vn) + '</extra>'})),
+      plotLayout(T, {barmode: 'group', yaxis: {title: un(), gridcolor: T.grid, zerolinecolor: T.ink}, legend: {orientation: 'h', y: 1.18}, height: 300, margin: {l: 70, r: 10, t: 10, b: 70}}));
+  }
+}
+
+/* ---------- 6. ranking ---------- */
+function secRanking() {
+  const box = $('c_ranking'); if (!box) return;
+  D.ranking.forEach((r, k) => {
+    box.appendChild(el('div', 'card', `<div class="head3d"><b>${esc(r.titulo)}</b><span>${esc(r.nota || '')}</span></div><div id="p_rk${k}" class="plot" style="height:${Math.max(220, 34 * r.itens.length + 100)}px"></div><div class="src"><b>${t('calculadoCom')}:</b> ${r.selos.map(seloHtml).join(' ')}</div>`));
+    if (k < D.ranking.length - 1) box.appendChild(el('div', null, '<div style="height:12px"></div>'));
+  });
+  desenharRanking();
+}
+function desenharRanking() {
+  if (!D.ranking) return;
+  const T = temaPlot();
+  D.ranking.forEach((r, k) => {
+    const y = r.itens.map((it, i) => it.rotulo + (i === 0 ? '  ★' : ''));
+    plot('p_rk' + k, [{type: 'bar', orientation: 'h', y, x: r.itens.map(it => cv(it.rel)), customdata: r.itens.map(it => it.est), marker: {color: r.itens.map((it, i) => i === 0 ? css('--ok') : css('--acc'))},
+      error_x: {type: 'data', array: r.itens.map(it => it.erro != null ? cv(it.erro) : 0), visible: r.itens.some(it => it.erro != null), color: T.ink, thickness: 1.3, width: 3},
+      text: r.itens.map(it => sgn(cv(it.rel), dig())), textposition: 'outside', cliponaxis: false,
+      hovertemplate: '%{y}<br>%{x:.' + dig() + 'f} ' + un() + r.itens.map(() => '').join('') + '<extra></extra>'}],
+      plotLayout(T, {xaxis: {title: `${LANG === 'en' ? 'energy' : 'energia'} ${t('relMin')} (${un()}${r.rotulo_por ? ' ' + r.rotulo_por : ''}; ★ = ${LANG === 'en' ? 'most stable' : 'mais estável'})`, gridcolor: T.grid, zerolinecolor: T.ink}, yaxis: {automargin: true, autorange: 'reversed', tickfont: {family: 'monospace'}}, margin: {l: 20, r: 60, t: 10, b: 60}}))
+      .then(gd => { if (!gd) return; gd.removeAllListeners && gd.removeAllListeners('plotly_click'); gd.on('plotly_click', ev => { const id = ev.points[0].customdata; if (id) abrirNoExplorador(id); }); });
+  });
+}
+
+/* ---------- 8. frequências ---------- */
+const FQ = D.freq || {sistemas: [], comparar: []};
+const FQS = FQ.sistemas;
+const FQSEL = {s: 0, m: 0};
+let vibV = null;
+function secFreq() {
+  const box = $('c_freq'); if (!box) return;
+  const exp = FQS.some(x => /explorat/i.test(x.rotulo || ''));
+  box.innerHTML = (exp ? `<div class="banner">${t('exploratorio')} ${FQS.filter(x => /explorat/i.test(x.rotulo || '')).map(x => esc(x.nome)).join(', ')}</div>` : '') +
+    `<div class="src">${FQS.map(x => `<b>${esc(x.nome)}</b>${x.rotulo ? ' (' + esc(x.rotulo) + ')' : ''}: ${seloHtml(x.selo)}`).join('<br>')}</div>${FQ.omitidos ? '<p class="cap">' + FQ.omitidos + (LANG === 'en' ? ' system(s) without mode displacements, for size.' : ' sistema(s) sem deslocamentos dos modos, por tamanho.') + '</p>' : ''}
+    <div class="card" style="margin-top:10px"><div id="p_freq" class="plot" style="height:${Math.max(300, 95 * FQS.length + 120)}px"></div><p class="cap" id="fq_cap"></p></div>
+    <div class="grid g2" style="margin-top:14px;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr)"><div><div class="v3d" id="v_vib" style="height:420px"></div></div>
+    <div class="card"><div class="head3d"><b id="fq_tit">${t('escolhaModo')}</b></div><div id="fq_info"></div>
+    <div class="ctrl" style="margin:10px 0 0;padding:0"><button class="btn" id="fq_prev">${t('modoAnt')}</button><button class="btn" id="fq_next">${t('modoProx')}</button><label><input type="checkbox" id="fq_anim" checked> ${t('animar')}</label></div></div></div><div id="fq_extra"></div>`;
+  desenharFreq();
+  const ex = $('fq_extra');
+  FQS.filter(x => x.nimag).forEach(x => { ex.innerHTML += `<div class="med" style="margin-top:10px"><div class="it bad"><b>${esc(x.nome)}: ${x.nimag} ${t('imag')}</b><span>${t('imagTxt')}</span></div></div>`; });
+  const zp = FQS.filter(x => x.zpe != null);
+  if (zp.length) ex.innerHTML += `<div class="card" style="margin-top:14px"><div class="head3d"><b>${t('zpe')}</b><span>${t('zpeT')}</span></div><div class="kv">${zp.map(x => `<div><small>${esc(x.nome)}</small><b>${enSpan(x.zpe, false).replace('data-rel="0"', 'data-rel="z"')}</b></div>`).join('')}</div></div>`;
+  FQS.filter(x => x.valid).forEach(x => { ex.innerHTML += fqValidacao(x); });
+  if (FQ.comparar.length) {
+    let h = `<div class="card" style="margin-top:14px"><div class="head3d"><b>${t('consol')}</b><span>${t('consolT')}</span></div><div class="kv" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">`;
+    FQ.comparar.forEach(c => {
+      const A = FQS.find(x => x.id === c.a), B = FQS.find(x => x.id === c.b);
+      h += `<div><small>${esc(A.nome)} × ${esc(B.nome)} (${c.n} ${LANG === 'en' ? 'modes' : 'modos'} > ${c.acima_de} cm⁻¹)</small>${c.mae != null ? `<b>${fmt(c.mae, 1)}</b> cm⁻¹ <span class="dl ${tolCls(c.mae, [30, 80])}">MAE</span><span class="d"> · ${t('maxErr')} ${fmt(c.max, 0)} cm⁻¹</span>` : '—'}</div>`;
+    });
+    ex.innerHTML += h + '</div></div>';
+  }
+  const mi = FQS.findIndex(x => x.freqs.length && x.modos); const m0 = mi < 0 ? 0 : Math.max(0, FQS[mi].freqs.findIndex(f => f > 300));
+  fqEscolher(mi < 0 ? 0 : mi, m0);
+  $('fq_prev').onclick = () => fqEscolher(FQSEL.s, FQSEL.m - 1);
+  $('fq_next').onclick = () => fqEscolher(FQSEL.s, FQSEL.m + 1);
+  $('fq_anim').onchange = () => { if (vibV) { $('fq_anim').checked ? vibV.animate({interval: 60, loop: 'forward', reps: 0}) : vibV.stopAnimate(); } };
+}
+function desenharFreq() {
+  if (!FQS.length || !$('p_freq')) return;
+  const T = temaPlot(), traces = [], shapes = [], an = [], Y = i => (FQS.length - 1 - i) * 1.25;
+  FQS.forEach((x, i) => {
+    const y = Y(i), cor = x.classe === 'MLIP' ? css('--ml') : (x.classe === 'QM' ? css('--qm') : css('--acc2'));
+    const marc = {}; (x.valid ? x.valid.linhas : []).forEach(r => { const k = x.freqs.indexOf(r.calc); if (k >= 0) marc[k] = r.rotulo; });
+    traces.push({type: 'bar', name: x.nome, x: x.freqs, y: x.freqs.map(() => 0.9), base: x.freqs.map(() => y), width: x.freqs.map(() => 6),
+      marker: {color: x.freqs.map((f, k) => f < -20 ? '#d64545' : (marc[k] ? '#d6249f' : cor))}, customdata: x.freqs.map((f, k) => [i, k, marc[k] || '']),
+      hovertemplate: esc(x.nome) + '<br>' + t('modo') + ' %{customdata[1]}: %{x:.1f} cm⁻¹<br>%{customdata[2]}<extra></extra>'});
+    an.push({x: 0, xref: 'paper', xanchor: 'left', y: y + 1.0, text: `<b>${esc(x.nome)}</b> · ${x.classe === 'MLIP' ? t('classeMl') : (x.classe === 'QM' ? t('classeQm') : x.classe)}`, showarrow: false, font: {size: 12, color: T.ink}});
+  });
+  FQ.comparar.forEach(c => {
+    const ia = FQS.findIndex(x => x.id === c.a), ib = FQS.findIndex(x => x.id === c.b); if (ia < 0 || ib < 0 || !c.pares) return;
+    const ya = Y(ia), yb = Y(ib), [lo, hi] = ya < yb ? [ya + 0.9, yb] : [yb + 0.9, ya];
+    c.pares.forEach(([fa, fb]) => shapes.push({type: 'line', x0: ya < yb ? fa : fb, x1: ya < yb ? fb : fa, y0: lo, y1: hi, line: {color: 'rgba(127,127,127,.45)', width: 0.8, dash: 'dot'}}));
+  });
+  const fmax = Math.max(...FQS.map(x => Math.max(...x.freqs, 0)));
+  plot('p_freq', traces, plotLayout(T, {barmode: 'overlay', showlegend: false, shapes, annotations: an, xaxis: {title: (LANG === 'en' ? 'frequency' : 'frequência') + ' (cm⁻¹)', gridcolor: T.grid, range: [Math.min(-100, ...FQS.map(x => Math.min(...x.freqs))) - 20, fmax + 150]},
+    yaxis: {visible: false, range: [-0.2, FQS.length * 1.25 + 0.3]}, margin: {l: 20, r: 20, t: 10, b: 60}, bargap: 0}))
+    .then(gd => { if (!gd) return; gd.removeAllListeners && gd.removeAllListeners('plotly_click'); gd.on('plotly_click', ev => { const c = ev.points[0].customdata; fqEscolher(c[0], c[1]); }); });
+  $('fq_cap').innerHTML = `<span style="color:var(--ml)">●</span> MLIP &nbsp; <span style="color:var(--qm)">●</span> ${t('classeQm')} &nbsp; <span style="color:#d6249f">●</span> ${LANG === 'en' ? 'mode matched to the reference' : 'modo comparado com a referência'} &nbsp; <span style="color:#d64545">●</span> ${t('freqImagTit').toLowerCase()}. ${FQ.comparar.length ? t('linhasLig') : ''}`;
+}
+function fqValidacao(x) {
+  const v = x.valid, tol = v.tol || [30, 80];
+  let h = `<div class="card" style="margin-top:14px"><div class="head3d"><b>${t('validacao')}: ${esc(x.nome)}</b><span>${esc(v.fonte || '')}</span></div><div class="kv"><div><small>${t('mae')}</small><b>${fmt(v.mae, 1)}</b> cm⁻¹</div><div><small>${t('maxErr')}</small><b>${fmt(v.max, 1)}</b> cm⁻¹</div></div>`;
+  h += `<div class="tabw"><div class="tab" style="grid-template-columns:minmax(160px,1.6fr) repeat(3,minmax(100px,1fr));margin-top:10px"><div class="gh">${t('modo')}</div><div class="gh">${t('refCol')} (cm⁻¹)</div><div class="gh">${t('calc')} (cm⁻¹)</div><div class="gh">${t('dif')}</div>`;
+  v.linhas.forEach(r => { h += `<div class="gl"><b>${esc(r.rotulo || '')}</b></div><div class="sv">${fmt(r.ref, 0)}</div><div class="sv">${fmt(r.calc, 0)}</div><div class="sv"><span class="dl ${tolCls(r.dif, tol)}">${sgn(r.dif, 0)}</span></div>`; });
+  return h + `</div></div><p class="cap">${t('legFreqTol')} (${tol[0]} / ${tol[1]} cm⁻¹)</p><div class="src"><b>${t('calculadoCom')}:</b> ${seloHtml(x.selo)}</div></div>`;
+}
+function fqEscolher(si, mi) {
+  const x = FQS[si]; if (!x) return;
+  FQSEL.s = si; FQSEL.m = Math.max(0, Math.min(x.freqs.length - 1, mi));
+  const f = x.freqs[FQSEL.m];
+  $('fq_tit').textContent = `${x.nome} · ${t('modo').toLowerCase()} ${FQSEL.m}: ${fmt(f, 1)} cm⁻¹`;
+  $('fq_info').innerHTML = `<div class="kv"><div><small>${LANG === 'en' ? 'frequency' : 'frequência'}</small><b>${fmt(f, 1)}</b> cm⁻¹</div><div><small>${t('fonte')}</small><b>${esc(x.classe)}</b></div></div>` +
+    (f < -20 ? `<div class="med"><div class="it bad"><b>${t('freqImagTit')}</b><span>${t('freqImagTxt')}</span></div></div>` : '') + `<div class="src"><b>${t('calculadoCom')}:</b> ${seloHtml(x.selo)}</div>`;
+  if (!vibV) vibV = mkViewer('v_vib', () => ({aba: 'vib', vib: FQS[FQSEL.s].id, vibmodo: FQSEL.m}));
+  if (!vibCena(vibV, x, FQSEL.m, 0.5, true, $('fq_anim').checked)) $('fq_info').innerHTML += `<p class="cap">${t('semModos')}</p>`;
+}
+function vibCena(v, x, mi, ampA, setas, anim) {
+  if (!v) return false;
+  v.stopAnimate(); v.removeAllModels(); v.removeAllShapes(); v.removeAllLabels();
+  const modo = x.modos && x.modos[mi], N = x.sim ? x.sim.length : 0;
+  if (!modo || !x.pos || !x.idx) { v.render(); return false; }
+  const set = new Set(x.idx), mx = Math.max(1e-6, ...modo.map(u => Math.hypot(u[0], u[1], u[2]))), amp = ampA / mx, nf = 24;
+  const fixos = [];
+  for (let a = 0; a < N; a++) if (!set.has(a)) fixos.push(`${x.sim[a]} ${x.pos[a][0].toFixed(3)} ${x.pos[a][1].toFixed(3)} ${x.pos[a][2].toFixed(3)}`);
+  if (fixos.length) { const m0 = v.addModel(fixos.length + '\n\n' + fixos.join('\n'), 'xyz'); m0.setStyle({}, {stick: {radius: 0.07, color: '#8a8a8a', opacity: 0.5}}); }
+  let fr = '';
+  for (let q = 0; q < nf; q++) {
+    const c = Math.sin(2 * Math.PI * q / nf) * amp;
+    fr += x.idx.length + '\n\n' + x.idx.map((a, k) => `${x.sim[a]} ${(x.pos[a][0] + c * modo[k][0]).toFixed(3)} ${(x.pos[a][1] + c * modo[k][1]).toFixed(3)} ${(x.pos[a][2] + c * modo[k][2]).toFixed(3)}`).join('\n') + '\n';
+  }
+  const m1 = v.addModelsAsFrames(fr, 'xyz');
+  const cf = a => corEl(a.elem);
+  m1.setStyle({}, {stick: {radius: 0.15, colorfunc: cf}, sphere: {scale: 0.25, colorfunc: cf}});
+  if (setas) x.idx.forEach((a, k) => { const u = modo[k], Lg = Math.hypot(u[0], u[1], u[2]) * 1.5 / mx; if (Lg > 0.15) v.addArrow({start: {x: x.pos[a][0], y: x.pos[a][1], z: x.pos[a][2]}, end: {x: x.pos[a][0] + u[0] * 1.5 / mx, y: x.pos[a][1] + u[1] * 1.5 / mx, z: x.pos[a][2] + u[2] * 1.5 / mx}, radius: 0.04, color: '#d6249f'}); });
+  if (x.cel) addBox(v, [].concat(...x.cel), corCaixa(), 0.04);
+  v.zoomTo(); v.render();
+  if (anim) v.animate({interval: 60, loop: 'forward', reps: 0});
+  return true;
+}
+
+/* ---------- 9. fila ---------- */
+function scfPlot(id, j) {
+  const T = temaPlot(), it = j.scf.map(r => r[0]);
+  const temConv = j.scf.some(r => r[3] != null && r[3] > 0), temDE = j.scf.some(r => r[2] != null);
+  const crit = j.criterio, tr = [];
+  const de = j.scf.map(r => r[2] != null && Math.abs(r[2]) > 0 ? Math.abs(r[2]) : null);
+  if (temConv) {
+    const mesmo = j.scf.every(r => r[2] == null || r[3] == null || Math.abs(Math.abs(r[2]) - r[3]) < 1e-14);
+    if (temDE && !mesmo) tr.push({x: it, y: de, mode: 'lines', line: {color: css('--muted'), width: 1}, opacity: 0.45, name: '|ΔE| ' + t('soInfo'), hovertemplate: '|ΔE| = %{y:.2e}<extra></extra>'});
+    tr.push({x: it, y: j.scf.map(r => r[3] > 0 ? r[3] : null), mode: 'lines+markers', line: {color: css('--acc'), width: 2.5}, marker: {size: 5}, name: (crit && crit.coluna) || t('convCol'), hovertemplate: '%{y:.2e}<extra></extra>'});
+  } else if (temDE) tr.push({x: it, y: de, mode: 'lines+markers', line: {color: css('--muted'), width: 2}, marker: {size: 4}, name: '|ΔE|'});
+  if (crit && crit.valor) tr.push({x: [it[0], Math.max(it[it.length - 1], it[0] + 1)], y: [crit.valor, crit.valor], mode: 'lines', line: {color: css('--ok'), dash: 'dash', width: 2}, name: `${t('critScf')} ${crit.nome} = ${crit.valor.toExponential(0)}`, hoverinfo: 'skip'});
+  plot(id, tr, plotLayout(T, {yaxis: {type: 'log', title: (crit && crit.coluna) || t('convCol'), gridcolor: T.grid, exponentformat: 'power'}, xaxis: {title: t('iterScf'), gridcolor: T.grid}, legend: {orientation: 'h', y: 1.3, font: {size: 11}}, height: 230, margin: {l: 62, r: 10, t: 10, b: 40}}));
+}
+function wtTexto(l) {
+  const m = l.match(/^(START|END)\s+\w+\s+(\w+)\s+(\d+)\s+([\d:]+)/);
+  let s = m ? (m[1] === 'START' ? t('inicio') + ' ' : (LANG === 'en' ? 'end ' : 'fim ')) + m[3] + ' ' + m[2] + ' ' + m[4] : l;
+  const e = l.match(/elapsed_s=(\d+)/); if (e) s += ' · ' + fmt(e[1] / 60, 1) + ' min';
+  return esc(s);
+}
+let JOBN = 0;
+const JOBS_PLOT = [];
+function jobCard(j, pref) {
+  const c = ESTCLS(j.estado), n = j.scf ? j.scf.length : 0, id = 'scf_' + pref + '_' + (JOBN++);
+  let h = `<b>${esc(j.nome)}</b>${pill(j.estado)}<br><span>${[j.programa, j.tipo, j.n_atomos ? j.n_atomos + (LANG === 'en' ? ' atoms' : ' átomos') : null].filter(Boolean).map(esc).join(' · ')}</span>`;
+  if (j.inicio) h += `<br><span>${t('inicio')}: ${j.inicio}</span>`;
+  if (j.walltime && j.walltime.length) h += `<br><span>${j.walltime.map(wtTexto).join('<br>')}</span>`;
+  if (j.duracao_s) h += `<br><span>${t('tempo')}: ${j.duracao_s < 120 ? fmt(j.duracao_s, 0) + ' s' : fmt(j.duracao_s / 60, 1) + ' min'}</span>`;
+  if (j.energia_eV != null) h += `<br><span>${j.estado === 'concluido' ? t('energiaFinal') : t('energiaUlt')}: <b>${fmt(j.energia_eV / 27.211386245988, 8)}</b> Eh = ${enSpan(j.energia_eV, false)}</span>`;
+  if (j.abortou) h += `<br><span style="color:var(--bad)">${t('abortou')}</span>`;
+  if (j.eta) {
+    const e = j.eta;
+    if (e.convergiu) h += `<br><span>${t('jaAbaixo')}.</span>`;
+    else if (e.iter_min != null) {
+      const a = Math.max(1, Math.round(e.iter_min)), b = Math.max(a, Math.round(e.iter_max));
+      const m1 = e.s_min != null ? Math.max(0.5, e.s_min / 60) : null, m2 = e.s_max != null ? Math.max(m1, e.s_max / 60) : null;
+      h += `<br><span>${e.spi ? t('ritmo') + ': <b>' + fmt(e.spi, 1) + ' s</b> ' + t('porIter') + ' · ' : ''}<b>${t('etaScf').replace('{a}', a + (b > a ? '–' + b : '')).replace('{m}', m1 == null ? '?' : (m1 < 1 ? '<1' : fmt(m1, 0) + (m2 > m1 + 0.5 ? '–' + fmt(m2, 0) : '')))}</b></span>`;
+    } else if (e.spi) h += `<br><span>${t('ritmo')}: <b>${fmt(e.spi, 1)} s</b> ${t('porIter')} · ${t('semEta')}.</span>`;
+  }
+  if (j.criterio && j.criterio.nota) h += `<br><span class="cap">ⓘ ${esc(j.criterio.nota)}</span>`;
+  if (n) { h += `<div class="plotw" id="${id}"></div><span>${n} ${t('iterLidas')}${j.n_ciclos_scf > 1 ? ' (' + j.n_ciclos_scf + ' ' + (LANG === 'en' ? 'SCF cycles' : 'ciclos de SCF') + ')' : ''} · ${j.scf_convergiu ? t('convergiuScf') : t('naoConvergiu')}</span>`; JOBS_PLOT.push([id, j]); }
+  if (j.nota) h += `<br><span>${esc(j.nota)}</span>`;
+  h += `<div class="src">${seloHtml(j.selo)}${j.arquivo ? '<br>' + esc(j.arquivo) : ''}${j.ts ? ' · ' + j.ts : ''}</div>`;
+  const d = el('div', 'job ' + c + (n ? ' big' : ''), h);
+  setTimeout(() => { if ($(id)) scfPlot(id, j); }, 0);
+  return d;
+}
+function secFila() {
+  const box = $('c_fila'); if (!box) return;
+  (D.fila_meta || []).forEach(m => { box.appendChild(el('p', 'cap', `${m.grupo ? '<b>' + esc(m.grupo) + '</b> · ' : ''}${t('lidoEm')} ${esc(m.quando || '—')} (${esc(m.arquivo)})`)); if (m.log && m.log.length) box.appendChild(el('details', 'g', `<summary>${t('atividade')}</summary><pre style="white-space:pre-wrap;font-size:12.5px;color:var(--muted);margin:6px 0 0">${esc(m.log.join('\n'))}</pre>`)); });
+  const grupos = {}; D.fila.forEach(j => { (grupos[j.grupo || ''] = grupos[j.grupo || ''] || []).push(j); });
+  Object.entries(grupos).forEach(([g, L], k) => {
+    if (g) box.appendChild(el('h3', null, esc(g)));
+    const w = el('div', 'chips'); box.appendChild(w);
+    L.forEach(j => w.appendChild(jobCard(j, 'f' + k)));
+  });
+}
+
+/* ---------- 10. métodos, 11. glossário ---------- */
+function secMetodos() {
+  const box = $('c_metodos'); if (!box) return;
+  const g = el('div', 'mgrid'); box.appendChild(g);
+  D.metodos.cards.forEach(f => g.appendChild(el('div', 'card', `<div class="head3d"><b>${esc(f.titulo)}</b>${f.classe ? '<span>' + esc(f.classe) + '</span>' : ''}</div><div>${seloHtml(f.selo)}</div><dl class="mdl">` + f.campos.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('') + '</dl>')));
+  if (D.metodos.maquina) box.appendChild(el('p', 'cap', `<b>${t('maquina')}:</b> ${esc(D.metodos.maquina)}`));
+}
+function secGloss() { const box = $('c_gloss'); if (!box) return; D.glossario.forEach(([a, b]) => box.appendChild(el('details', 'g', `<summary>${esc(a)}</summary><p>${esc(b)}</p>`))); }
+
+/* ---------- unidade global ---------- */
+function setUnit(u) {
+  UN = u; try { localStorage.setItem('painel_calculos:unidade', u); } catch (e) { /* */ }
+  document.querySelectorAll('.unseg button').forEach(x => x.classList.toggle('on', x.dataset.u === UN));
+  atualizarEnergias(); desenharEnergia(); desenharRanking();
+  if (zAberto) zInfo();
+}
+function ligarUnidades() { document.querySelectorAll('.unseg button').forEach(b => { b.onclick = () => setUnit(b.dataset.u); b.classList.toggle('on', b.dataset.u === UN); }); }
+
+/* ---------- modo ampliar (tela cheia) ---------- */
+const ZS = Object.assign({est: null, aba: 'estrutura', modo: 'final', rep: '1,1,1', box: true, H: true, fundo: 'auto', estilos: {}, ocultos: {}, cores: {}, todos: false,
+  isolar: '', raio: 4, med: true, normais: true, contatos: '', cut: 3.2, rotulos: false, spin: false, medmodo: 'dist',
+  vib: null, vibamp: 0.5, vibsetas: true, vibanim: true, vibmodo: 0, filme: null, quadro: 0, painel: true}, lsGet('zoom', {}));
+Object.assign(CORCOMP, ZS.cores || {});
+const ZMED = [];
+let zV = null, zPicks = [], zAberto = false, zSig = '', zPlaying = null;
+function zSalvar() { lsSet('zoom', ZS); }
+function zEstrutura() {
+  if (ZS.aba === 'filme') {
+    const F = D.filmes.find(f => f.id === ZS.filme); if (!F) return null;
+    const q = Math.max(0, Math.min(F.idx.length - 1, ZS.quadro));
+    return {S: filmeS(F), flat: F.pos[q], scale: 100, cell: F.cells[q], disp: null, des: null, F, q, selo: F.selo, rot: `${t('zFilme')} · ${t('quadro')} ${F.idx[q] + 1}`, nome: F.nome};
+  }
+  const e = EST[ZS.est]; if (!e) return null;
+  if (ZS.modo === 'ini') return {S: e, flat: e.ini, scale: 1000, cell: e.cel_i, disp: null, des: desDe(e.id, true), e, selo: e.selo, rot: t('geoInicial'), nome: e.nome};
+  return {S: e, flat: e.pos, scale: 1000, cell: e.cel, disp: e.disp, des: desDe(e.id, false), e, selo: e.selo, rot: t('final'), nome: e.nome};
+}
+function zAtomos(est) {
+  const S = est.S, N = S.el.length, c = est.cell, rp = ZS.rep.split(',').map(Number), iso = ZS.isolar !== '' && S.comp;
+  const T = [];
+  if (iso && c && !S.caixa) { for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) for (const k of [-1, 0, 1]) T.push([i, j, k]); }
+  else if (c && !S.caixa) { for (let i = 0; i < rp[0]; i++) for (let j = 0; j < rp[1]; j++) for (let k = 0; k < rp[2]; k++) T.push([i, j, k]); }
+  else T.push([0, 0, 0]);
+  const A = {el: [], x: [], y: [], z: [], comp: [], idx: [], d: [], t: []};
+  T.forEach(tt => {
+    const s = c ? [0, 1, 2].map(q => tt[0] * c[q] + tt[1] * c[3 + q] + tt[2] * c[6 + q]) : [0, 0, 0];
+    for (let a = 0; a < N; a++) {
+      A.el.push(S.el[a]); A.x.push(est.flat[3 * a] / est.scale + s[0]); A.y.push(est.flat[3 * a + 1] / est.scale + s[1]); A.z.push(est.flat[3 * a + 2] / est.scale + s[2]);
+      A.comp.push(S.comp ? S.comp[a] : -1); A.idx.push(a); A.d.push(est.disp ? est.disp[a] / 100 : 0); A.t.push(tt);
+    }
+  });
+  if (!iso) return A;
+  const alvo = +ZS.isolar, base = Math.max(0, T.findIndex(tt => tt[0] === 0 && tt[1] === 0 && tt[2] === 0)) * N, keep = new Set(), nuc = [];
+  for (let a = 0; a < N; a++) if (A.comp[base + a] === alvo) { keep.add(base + a); nuc.push(base + a); }
+  if (ZS.raio > 0) for (let g = 0; g < A.el.length; g++) if (!keep.has(g)) { for (const b of nuc) if (Math.hypot(A.x[g] - A.x[b], A.y[g] - A.y[b], A.z[g] - A.z[b]) < ZS.raio) { keep.add(g); break; } }
+  const B2 = {el: [], x: [], y: [], z: [], comp: [], idx: [], d: [], t: []};
+  [...keep].sort((a, b) => a - b).forEach(g => { for (const k of Object.keys(B2)) B2[k].push(A[k][g]); });
+  return B2;
+}
+function zXyz(A) { return A.el.length + '\n\n' + A.el.map((e, i) => `${e} ${A.x[i].toFixed(3)} ${A.y[i].toFixed(3)} ${A.z[i].toFixed(3)}`).join('\n'); }
+const nomeComp = (S, k) => k >= 0 && S.comps && S.comps[k] ? S.comps[k].nome : t('semComp');
+function zHover(v, S) {
+  v.setHoverable({}, true, (a, vv) => { if (!a.label) a.label = vv.addLabel(`${a.elem} #${a.idx != null ? a.idx : a.index} · ${S ? nomeComp(S, a.comp) : ''}`, {position: a, backgroundColor: '#1d2433', backgroundOpacity: 0.85, fontColor: '#fff', fontSize: 12, showBackground: true, inFront: true}); },
+    (a, vv) => { if (a.label) { vv.removeLabel(a.label); delete a.label; } });
+}
+function zMedida(pts, modo) {
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], nrm = a => Math.sqrt(dot(a, a));
+  if (modo === 'dist') return fmt(nrm(sub(pts[0], pts[1])), 3) + ' Å';
+  if (modo === 'ang') { const u = sub(pts[0], pts[1]), w = sub(pts[2], pts[1]); return fmt(Math.acos(Math.max(-1, Math.min(1, dot(u, w) / nrm(u) / nrm(w)))) * 180 / Math.PI, 2) + '°'; }
+  const b1 = sub(pts[1], pts[0]), b2 = sub(pts[2], pts[1]), b3 = sub(pts[3], pts[2]), n1 = cross(b1, b2), n2 = cross(b2, b3);
+  const m1 = cross(n1, [b2[0] / nrm(b2), b2[1] / nrm(b2), b2[2] / nrm(b2)]);
+  return fmt(Math.atan2(dot(m1, n2), dot(n1, n2)) * 180 / Math.PI, 2) + '°';
+}
+function zClick(a) {
+  zPicks.push(a);
+  const need = {dist: 2, ang: 3, dih: 4}[ZS.medmodo];
+  if (zPicks.length >= need) {
+    const pts = zPicks.map(p => [p.x, p.y, p.z]);
+    ZMED.push({txt: `${{dist: t('zDist'), ang: t('zAng'), dih: t('zDih')}[ZS.medmodo].split(' (')[0]} ${zPicks.map(p => p.elem + (p.idx != null ? p.idx : '')).join('–')}: ${zMedida(pts, ZS.medmodo)}`, pts});
+    zPicks = []; zListaMed();
+  }
+  zDesenharMedidas();
+}
+function zListaMed() { const b = $('zmed_lista'); if (!b) return; b.innerHTML = ZMED.length ? ZMED.map(m => `<div class="it">${esc(m.txt)}</div>`).join('') : `<p class="cap">${t('zMedVazio')}</p>`; }
+function zDesenharMedidas() {
+  if (!zV) return;
+  (zV._ms || []).forEach(s => zV.removeShape(s)); (zV._ml || []).forEach(l => zV.removeLabel(l));
+  zV._ms = []; zV._ml = [];
+  const xyz = a => ({x: a[0], y: a[1], z: a[2]});
+  zPicks.forEach(p => zV._ms.push(zV.addSphere({center: {x: p.x, y: p.y, z: p.z}, radius: 0.32, color: '#ffd43b', alpha: 0.7})));
+  ZMED.forEach(m => {
+    m.pts.forEach(p => zV._ms.push(zV.addSphere({center: xyz(p), radius: 0.25, color: '#fab005', alpha: 0.6})));
+    for (let i = 0; i + 1 < m.pts.length; i++) zV._ms.push(zV.addCylinder({start: xyz(m.pts[i]), end: xyz(m.pts[i + 1]), radius: 0.04, color: '#fab005', dashed: true}));
+    const mid = [0, 1, 2].map(q => m.pts.reduce((s, p) => s + p[q], 0) / m.pts.length);
+    zV._ml.push(zV.addLabel(m.txt.split(': ')[1], {position: xyz(mid), fontSize: 14, fontColor: '#201500', backgroundColor: '#ffd43b', backgroundOpacity: 0.9, showBackground: true, inFront: true}));
+  });
+  zV.render();
+}
+function zCena(manter) {
+  if (!zV || ZS.aba === 'vib') return;
+  const est = zEstrutura(), v = zV;
+  if (!est) { v.removeAllModels(); v.removeAllShapes(); v.removeAllLabels(); v.render(); $('zbadge').textContent = '—'; return; }
+  const sig = [ZS.aba, ZS.est, ZS.modo, ZS.rep, ZS.isolar, ZS.raio, ZS.filme].join('|');
+  if (sig !== zSig) { ZMED.length = 0; zPicks = []; zListaMed(); }
+  const vw = manter && zSig ? v.getView() : null; zSig = sig;
+  v.stopAnimate(); v.removeAllModels(); v.removeAllShapes(); v.removeAllLabels(); v._ms = []; v._ml = [];
+  const S = est.S, modo = ZS.modo === 'disp' && ZS.aba !== 'filme' ? 'disp' : 'cor';
+  let dmax = 1; if (modo === 'disp' && est.e) dmax = dispMax(est.e);
+  $('zcbar').style.display = modo === 'disp' ? 'block' : 'none'; $('zdmax').textContent = fmt(dmax, 2) + ' Å'; $('zcbar_t').textContent = '|Δr|';
+  if (ZS.modo === 'sob' && ZS.aba !== 'filme' && est.e) {
+    const A0 = zAtomos(Object.assign({}, est, {flat: est.e.ini, cell: est.e.cel_i, disp: null}));
+    const g = v.addModel(zXyz(A0), 'xyz'); g.setStyle({}, {stick: {radius: 0.07, color: '#8a8a8a', opacity: 0.5}});
+  }
+  const A = zAtomos(est), m = v.addModel(zXyz(A), 'xyz'), at = m.selectedAtoms({});
+  for (let q = 0; q < at.length; q++) { at[q].comp = A.comp[q]; at[q].idx = A.idx[q]; at[q].d = A.d[q]; at[q].lab = at[q].elem + A.idx[q]; }
+  const cf = a => corAtomo(a, modo, dmax, S, ZS.todos);
+  m.setStyle({}, estiloDe('bastao', cf, false));
+  (S.comps || []).forEach((c, k) => {
+    const sel = {predicate: a => a.comp === k};
+    if (ZS.ocultos[c.nome]) { m.setStyle(sel, {}); return; }
+    const tp = ZS.estilos[c.nome] || 'bastao';
+    if (tp === 'superficie') { m.setStyle(sel, {}); try { v.addSurface($3Dmol.SurfaceType.VDW, {opacity: 0.7, color: corComp(S, k)}, {model: m, predicate: a => a.comp === k}); } catch (e) { /* */ } }
+    else m.setStyle(sel, estiloDe(tp, cf, false));
+  });
+  if (!ZS.H) m.setStyle({elem: 'H'}, {});
+  if (ZS.box && est.cell && !S.caixa) { addBox(v, est.cell, corCaixa(), 0.06); if (ZS.modo === 'sob' && est.e && est.e.cel_i) addBox(v, est.e.cel_i, '#999', 0.025); }
+  if (ZS.med && est.des) {
+    const c = est.cell, tr = [...new Set(A.t.map(x => x.join(',')))];
+    tr.forEach(key => { const tt = key.split(',').map(Number); if (ZS.isolar !== '' && key !== '0,0,0') return; const s = c ? [0, 1, 2].map(q => tt[0] * c[q] + tt[1] * c[3 + q] + tt[2] * c[6 + q]) : [0, 0, 0]; desenharMedidas(v, est.des, s, key === tr[0] || key === '0,0,0', ZS.normais, D.medidas && D.medidas.defs); });
+  }
+  if (ZS.contatos !== '' && S.comp) {
+    const alvo = +ZS.contatos, X = [], O = []; for (let i = 0; i < A.el.length; i++) (A.comp[i] === alvo ? X : O).push(i);
+    const vis = i => !ZS.ocultos[nomeComp(S, A.comp[i])] && (ZS.H || A.el[i] !== 'H');
+    let n = 0;
+    for (const a of X) { if (!vis(a)) continue; for (const b of O) { if (!vis(b)) continue; const d = Math.hypot(A.x[a] - A.x[b], A.y[a] - A.y[b], A.z[a] - A.z[b]); if (d < ZS.cut && d > 0.9 && n < 450) { v.addLine({dashed: true, dashLength: 0.18, gapLength: 0.12, color: '#7c3aed', start: {x: A.x[a], y: A.y[a], z: A.z[a]}, end: {x: A.x[b], y: A.y[b], z: A.z[b]}}); n++; } } }
+    if ($('zcont_n')) $('zcont_n').textContent = n + ' ' + t('zContatos') + (n >= 450 ? ' ' + t('zLimite') : '');
+  }
+  if (ZS.rotulos) v.addPropertyLabels('lab', {}, {fontSize: 10, fontColor: '#fff', backgroundColor: '#1d2433', backgroundOpacity: 0.6, showBackground: true});
+  zHover(v, S); v.setClickable({}, true, zClick);
+  if (vw) v.setView(vw); else v.zoomTo();
+  v.spin(ZS.spin); v.render();
+  zDesenharMedidas();
+  $('zbadge').innerHTML = `<b>${esc(est.nome)}</b> · ${est.rot}<br>${esc(est.selo || NR)}`;
+  zInfo();
+}
+function zInfo() {
+  const b = $('zinfo_str'); if (!b) return;
+  const est = zEstrutura(); if (!est || !est.e) { b.innerHTML = ''; return; }
+  const e = est.e;
+  b.innerHTML = `<div class="kv"><div><small>${t('energiaTotal')}</small><b>${enSpan(e.E, false)}</b></div>${kvComuns(e)}</div>` + medidasLista(e.id, ZS.modo === 'ini');
+}
+function zVibCena() {
+  const x = FQS.find(f => f.id === ZS.vib) || FQS.find(f => f.modos); if (!x) { $('zbadge').textContent = t('zSemVib'); return; }
+  ZS.vib = x.id;
+  const mi = Math.max(0, Math.min(x.freqs.length - 1, ZS.vibmodo));
+  if ($('zvib_info')) $('zvib_info').innerHTML = `<b>${fmt(x.freqs[mi], 1)} cm⁻¹</b>${x.freqs[mi] < -20 ? ' <span class="dl bad">imag.</span>' : ''} · ${esc(x.nome)}`;
+  vibCena(zV, x, mi, ZS.vibamp, ZS.vibsetas, ZS.vibanim);
+  zV.setClickable({}, false); zHover(zV, null);
+  $('zcbar').style.display = 'none';
+  $('zbadge').innerHTML = `<b>${esc(x.nome)}</b> · ${t('modo').toLowerCase()} ${mi}: ${fmt(x.freqs[mi], 1)} cm⁻¹${x.rotulo ? ' (' + esc(x.rotulo) + ')' : ''}<br>${esc(x.selo)}`;
+}
+function qDeMatriz(m) {
+  const tr = m[0][0] + m[1][1] + m[2][2]; let x, y, z, w;
+  if (tr > 0) { const s = Math.sqrt(tr + 1) * 2; w = s / 4; x = (m[2][1] - m[1][2]) / s; y = (m[0][2] - m[2][0]) / s; z = (m[1][0] - m[0][1]) / s; }
+  else if (m[0][0] > m[1][1] && m[0][0] > m[2][2]) { const s = Math.sqrt(1 + m[0][0] - m[1][1] - m[2][2]) * 2; w = (m[2][1] - m[1][2]) / s; x = s / 4; y = (m[0][1] + m[1][0]) / s; z = (m[0][2] + m[2][0]) / s; }
+  else if (m[1][1] > m[2][2]) { const s = Math.sqrt(1 + m[1][1] - m[0][0] - m[2][2]) * 2; w = (m[0][2] - m[2][0]) / s; x = (m[0][1] + m[1][0]) / s; y = s / 4; z = (m[1][2] + m[2][1]) / s; }
+  else { const s = Math.sqrt(1 + m[2][2] - m[0][0] - m[1][1]) * 2; w = (m[1][0] - m[0][1]) / s; x = (m[0][2] + m[2][0]) / s; y = (m[1][2] + m[2][1]) / s; z = s / 4; }
+  return [x, y, z, w];
+}
+function zVista(d) {
+  if (!zV || !d) return;
+  const n0 = Math.hypot(...d), n = d.map(c => c / n0), cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  let up = [0, 1, 0]; if (Math.abs(n[1]) > 0.95) up = [1, 0, 0];
+  const zc = n.map(c => -c); let xc = cross(up, zc); const nx = Math.hypot(...xc); xc = xc.map(c => c / nx); const yc = cross(zc, xc);
+  const q = qDeMatriz([xc, yc, zc]), vw = zV.getView();
+  zV.setView([vw[0], vw[1], vw[2], vw[3], q[0], q[1], q[2], q[3]]); zV.render();
+}
+function zVetor(qual) {
+  const est = zEstrutura(); if (!est) return null;
+  const c = est.cell;
+  if (c && qual === 'a') return [c[0], c[1], c[2]]; if (c && qual === 'b') return [c[3], c[4], c[5]]; if (c && qual === 'c') return [c[6], c[7], c[8]];
+  if (!c && 'abc'.includes(qual)) return {a: [1, 0, 0], b: [0, 1, 0], c: [0, 0, 1]}[qual];
+  if (qual === 'n' && est.des) { const p = Object.values(est.des).find(d => d.setas && d.setas.length); return p ? p.setas[0][1] : null; }
+  return null;
+}
+function zBaixar(nome, txt) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], {type: 'text/plain'})); a.download = nome; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+function zExportar(fa) {
+  const est = zEstrutura(); if (!est) return;
+  const S = est.S, N = S.el.length, c = est.cell && !S.caixa ? est.cell : null;
+  const P = []; for (let a = 0; a < N; a++) P.push([est.flat[3 * a] / est.scale, est.flat[3 * a + 1] / est.scale, est.flat[3 * a + 2] / est.scale]);
+  const nome = (est.nome || 'estrutura').replace(/[^\w.-]+/g, '_') + (ZS.modo === 'ini' ? '_inicial' : '');
+  if (fa === 'xyz') {
+    const lat = c ? `Lattice="${c.join(' ')}" Properties=species:S:1:pos:R:3 pbc="T T T"` : '';
+    zBaixar(nome + '.xyz', N + '\n' + lat + '\n' + P.map((p, a) => `${S.el[a]} ${p[0].toFixed(5)} ${p[1].toFixed(5)} ${p[2].toFixed(5)}`).join('\n') + '\n');
+    return;
+  }
+  if (!c) { alert(t('zSemCel')); return; }
+  const A = [c.slice(0, 3), c.slice(3, 6), c.slice(6, 9)], len = v => Math.hypot(...v), ang = (u, w) => Math.acos((u[0] * w[0] + u[1] * w[1] + u[2] * w[2]) / len(u) / len(w)) * 180 / Math.PI;
+  const det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+  const inv = [[(A[1][1] * A[2][2] - A[1][2] * A[2][1]) / det, (A[0][2] * A[2][1] - A[0][1] * A[2][2]) / det, (A[0][1] * A[1][2] - A[0][2] * A[1][1]) / det],
+    [(A[1][2] * A[2][0] - A[1][0] * A[2][2]) / det, (A[0][0] * A[2][2] - A[0][2] * A[2][0]) / det, (A[0][2] * A[1][0] - A[0][0] * A[1][2]) / det],
+    [(A[1][0] * A[2][1] - A[1][1] * A[2][0]) / det, (A[0][1] * A[2][0] - A[0][0] * A[2][1]) / det, (A[0][0] * A[1][1] - A[0][1] * A[1][0]) / det]];
+  let s = `data_${nome}\n_symmetry_space_group_name_H-M 'P 1'\n_cell_length_a ${len(A[0]).toFixed(5)}\n_cell_length_b ${len(A[1]).toFixed(5)}\n_cell_length_c ${len(A[2]).toFixed(5)}\n_cell_angle_alpha ${ang(A[1], A[2]).toFixed(4)}\n_cell_angle_beta ${ang(A[0], A[2]).toFixed(4)}\n_cell_angle_gamma ${ang(A[0], A[1]).toFixed(4)}\nloop_\n_atom_site_label\n_atom_site_type_symbol\n_atom_site_fract_x\n_atom_site_fract_y\n_atom_site_fract_z\n`;
+  P.forEach((p, a) => { const f = [0, 1, 2].map(k => p[0] * inv[0][k] + p[1] * inv[1][k] + p[2] * inv[2][k]); s += `${S.el[a]}${a + 1} ${S.el[a]} ${f.map(x => x.toFixed(6)).join(' ')}\n`; });
+  zBaixar(nome + '.cif', s);
+}
+function zPng() {
+  if (!zV) return;
+  const w = $('zv'), W = w.clientWidth, H = w.clientHeight, k = 2.5, ant = [w.style.width, w.style.height, w.style.right, w.style.bottom];
+  w.style.right = 'auto'; w.style.bottom = 'auto'; w.style.width = (W * k) + 'px'; w.style.height = (H * k) + 'px';
+  zV.resize(); zV.render();
+  const uri = zV.pngURI();
+  w.style.width = ant[0]; w.style.height = ant[1]; w.style.right = ant[2]; w.style.bottom = ant[3]; zV.resize(); zV.render();
+  const a = document.createElement('a'); a.href = uri; a.download = (ZS.est || 'estrutura') + '.png'; document.body.appendChild(a); a.click(); a.remove();
+}
+function zOpt(lista, sel) { return lista.map(([v, x]) => `<option value="${esc(v)}"${String(v) === String(sel) ? ' selected' : ''}>${esc(x)}</option>`).join(''); }
+function zPainel() {
+  const e = EST[ZS.est] || D.est[0], S = e || {comps: []};
+  const filmes = D.filmes.filter(f => !e || f.est === e.id || !f.est), vibs = FQS.filter(x => x.modos);
+  const comps = S.comps || [];
+  $('zp_corpo').innerHTML = `
+  <div class="seg zabas"><button data-aba="estrutura" class="${ZS.aba === 'estrutura' ? 'on' : ''}">${t('zEstr')}</button><button data-aba="vib" class="${ZS.aba === 'vib' ? 'on' : ''}" ${vibs.length ? '' : 'disabled'}>${t('zVib')}</button><button data-aba="filme" class="${ZS.aba === 'filme' ? 'on' : ''}" ${filmes.length ? '' : 'disabled'}>${t('zFilme')}</button></div>
+  <details class="g" open><summary>${t('estrutura')}</summary>
+    <label><select id="zs_est">${zOpt(D.est.map(x => [x.id, x.nome]), ZS.est)}</select></label>
+    <div class="seg zmodos"><button data-m="final" class="${ZS.modo === 'final' ? 'on' : ''}">${t('final')}</button><button data-m="ini" class="${ZS.modo === 'ini' ? 'on' : ''}">${t('inicial')}</button><button data-m="sob" class="${ZS.modo === 'sob' ? 'on' : ''}">${t('sob')}</button><button data-m="disp" class="${ZS.modo === 'disp' ? 'on' : ''}">|Δr|</button></div>
+    <div id="zinfo_str"></div></details>
+  <details class="g" open><summary>${t('zExib')}</summary>
+    <label>${t('supercel')} <select id="zs_rep">${zOpt([['1,1,1', '1×1×1'], ['2,2,1', '2×2×1'], ['2,2,2', '2×2×2'], ['3,3,3', '3×3×3']], ZS.rep)}</select></label>
+    <label><input type="checkbox" id="zs_box" ${ZS.box ? 'checked' : ''}> ${t('caixa')}</label><label><input type="checkbox" id="zs_H" ${ZS.H ? 'checked' : ''}> ${t('hidrog')}</label>
+    <label>${t('zFundo')} <select id="zs_fundo">${zOpt([['auto', t('zFundoAuto')], ['claro', t('claro')], ['escuro', t('escuro')]], ZS.fundo)}</select></label></details>
+  <details class="g" open><summary>${t('zComp')}</summary>
+    ${comps.length ? comps.map((c, k) => `<div class="zrow"><label><input type="checkbox" data-vis="${esc(c.nome)}" ${ZS.ocultos[c.nome] ? '' : 'checked'}> ${esc(c.nome)}</label><select data-est="${esc(c.nome)}">${zOpt(OPC_ESTILO().filter(o => o[0] !== 'oculto').concat([['superficie', LANG === 'en' ? 'surface' : 'superfície']]), ZS.estilos[c.nome] || 'bastao')}</select><input type="color" data-cor="${esc(c.nome)}" value="${corComp(S, k)}"></div>`).join('') : `<p class="cap">${t('semComp')}</p>`}
+    <label><input type="checkbox" id="zs_todos" ${ZS.todos ? 'checked' : ''}> ${t('zCorTodos')}</label>
+    ${comps.length ? `<label>${t('zIsolar')} <select id="zs_iso">${zOpt([['', t('zNenhum')]].concat(comps.map((c, k) => [k, c.nome])), ZS.isolar)}</select></label>
+    <label>${t('zViz')} <input type="range" id="zs_raio" min="0" max="8" step="0.5" value="${ZS.raio}"> <span id="zs_raio_v">${ZS.raio} Å</span></label>` : ''}</details>
+  ${D.medidas ? `<details class="g" open><summary>${t('zMedidas')}</summary><label><input type="checkbox" id="zs_med" ${ZS.med ? 'checked' : ''}> ${t('zMostrarMed')}</label><label><input type="checkbox" id="zs_norm" ${ZS.normais ? 'checked' : ''}> ${t('zNormais')}</label></details>` : ''}
+  <details class="g"><summary>${t('zCont')}</summary>
+    ${comps.length ? `<label>${t('zContChk')} <select id="zs_cont">${zOpt([['', t('zNenhum')]].concat(comps.map((c, k) => [k, c.nome])), ZS.contatos)}</select></label>
+    <label>${t('zAbaixo')} <input type="range" id="zs_cut" min="2" max="4.5" step="0.1" value="${ZS.cut}"> <span id="zs_cut_v">${ZS.cut} Å</span></label><div class="cap" id="zcont_n"></div>` : ''}
+    <label><input type="checkbox" id="zs_rot" ${ZS.rotulos ? 'checked' : ''}> ${t('zRot')}</label><p class="cap">${t('zHover')}</p></details>
+  <details class="g"><summary>${t('zMedInt')}</summary>
+    <label>${t('zMedir')} <select id="zs_medm">${zOpt([['dist', t('zDist')], ['ang', t('zAng')], ['dih', t('zDih')]], ZS.medmodo)}</select></label>
+    <div id="zmed_lista" class="med"></div><button class="btn" id="zmed_limpa">${t('zLimpar')}</button></details>
+  <details class="g" ${ZS.aba === 'vib' ? 'open' : ''}><summary>${t('zModos')}</summary>${vibs.length ? `
+    <label><select id="zv_sis">${zOpt(vibs.map(x => [x.id, x.nome]), ZS.vib || vibs[0].id)}</select></label>
+    <label>${t('modo')} <select id="zv_modo">${zOpt((FQS.find(x => x.id === (ZS.vib || vibs[0].id)) || vibs[0]).freqs.map((f, i) => [i, i + ': ' + fmt(f, 1) + ' cm⁻¹']), ZS.vibmodo)}</select></label>
+    <label>${t('zAmp')} <input type="range" id="zv_amp" min="0.1" max="1.5" step="0.05" value="${ZS.vibamp}"></label>
+    <label><input type="checkbox" id="zv_set" ${ZS.vibsetas ? 'checked' : ''}> ${t('zSetas')}</label><label><input type="checkbox" id="zv_an" ${ZS.vibanim ? 'checked' : ''}> ${t('animar')}</label><div id="zvib_info"></div>` : `<p class="cap">${t('zSemVib')}</p>`}</details>
+  <details class="g" ${ZS.aba === 'filme' ? 'open' : ''}><summary>${t('s_filme')}</summary>${filmes.length ? `
+    <label><select id="zf_sel">${zOpt(filmes.map(f => [f.id, f.nome]), ZS.filme || filmes[0].id)}</select></label>
+    <div class="ctrl" style="padding:0;margin:6px 0"><button class="btn pri" id="zf_play">${t('tocar')}</button><input type="range" id="zf_sl" min="0" max="${Math.max(0, ((D.filmes.find(f => f.id === (ZS.filme || filmes[0].id)) || {idx: [0]}).idx.length) - 1)}" value="${ZS.quadro}" style="flex:1"></div><div id="zf_info" class="cap"></div>` : `<p class="cap">${t('zSemFilme')}</p>`}</details>
+  <details class="g" open><summary>${t('zVista')}</summary>
+    <div class="zbts"><button class="btn" data-vista="a">${t('zAoLongo')} a</button><button class="btn" data-vista="b">${t('zAoLongo')} b</button><button class="btn" data-vista="c">${t('zAoLongo')} c</button>${D.medidas ? `<button class="btn" data-vista="n">${t('zPerp')}</button>` : ''}<button class="btn" id="zs_reset">${t('zReset')}</button></div>
+    <label><input type="checkbox" id="zs_spin" ${ZS.spin ? 'checked' : ''}> ${t('girar')}</label>
+    <div class="zbts"><button class="btn" id="zx_png">${t('zPng')}</button><button class="btn" id="zx_xyz">.xyz</button><button class="btn" id="zx_cif">.cif</button></div></details>`;
+  zListaMed(); zLigar();
+}
+function zRecarregar(manter) { zSalvar(); if (ZS.aba === 'vib') zVibCena(); else zCena(manter); }
+function zLigar() {
+  const $$ = q => document.querySelectorAll(q), on = (id, ev, f) => { const e = $(id); if (e) e[ev] = f; };
+  $$('.zabas button').forEach(b => b.onclick = () => { if (b.disabled) return; ZS.aba = b.dataset.aba; if (ZS.aba === 'filme' && !D.filmes.some(f => f.id === ZS.filme)) { const f = D.filmes.find(f => f.est === ZS.est) || D.filmes[0]; ZS.filme = f && f.id; ZS.quadro = 0; } zPainel(); zRecarregar(false); zUrl(); });
+  on('zs_est', 'onchange', () => { ZS.est = $('zs_est').value; ZS.aba = 'estrutura'; ZS.isolar = ''; ZS.contatos = ''; zPainel(); zRecarregar(false); zUrl(); });
+  $$('.zmodos button').forEach(b => b.onclick = () => { ZS.modo = b.dataset.m; ZS.aba = 'estrutura'; $$('.zmodos button').forEach(x => x.classList.toggle('on', x === b)); zRecarregar(true); zUrl(); });
+  on('zs_rep', 'onchange', () => { ZS.rep = $('zs_rep').value; zRecarregar(false); });
+  on('zs_box', 'onchange', () => { ZS.box = $('zs_box').checked; zRecarregar(true); }); on('zs_H', 'onchange', () => { ZS.H = $('zs_H').checked; zRecarregar(true); });
+  on('zs_fundo', 'onchange', () => { ZS.fundo = $('zs_fundo').value; zFundo(); zSalvar(); });
+  $$('[data-vis]').forEach(e => e.onchange = () => { ZS.ocultos[e.dataset.vis] = !e.checked; zRecarregar(true); });
+  $$('[data-est]').forEach(e => e.onchange = () => { ZS.estilos[e.dataset.est] = e.value; zRecarregar(true); });
+  $$('[data-cor]').forEach(e => e.onchange = () => { ZS.cores[e.dataset.cor] = e.value; CORCOMP[e.dataset.cor] = e.value; zRecarregar(true); });
+  on('zs_todos', 'onchange', () => { ZS.todos = $('zs_todos').checked; zRecarregar(true); });
+  on('zs_iso', 'onchange', () => { ZS.isolar = $('zs_iso').value; zRecarregar(false); });
+  on('zs_raio', 'oninput', () => { ZS.raio = +$('zs_raio').value; $('zs_raio_v').textContent = ZS.raio + ' Å'; zRecarregar(true); });
+  on('zs_med', 'onchange', () => { ZS.med = $('zs_med').checked; zRecarregar(true); }); on('zs_norm', 'onchange', () => { ZS.normais = $('zs_norm').checked; zRecarregar(true); });
+  on('zs_cont', 'onchange', () => { ZS.contatos = $('zs_cont').value; zRecarregar(true); });
+  on('zs_cut', 'oninput', () => { ZS.cut = +$('zs_cut').value; $('zs_cut_v').textContent = ZS.cut.toFixed(1) + ' Å'; if (ZS.contatos !== '') zRecarregar(true); });
+  on('zs_rot', 'onchange', () => { ZS.rotulos = $('zs_rot').checked; zRecarregar(true); });
+  on('zs_medm', 'onchange', () => { ZS.medmodo = $('zs_medm').value; zPicks = []; zDesenharMedidas(); zSalvar(); });
+  on('zmed_limpa', 'onclick', () => { ZMED.length = 0; zPicks = []; zListaMed(); zDesenharMedidas(); });
+  on('zv_sis', 'onchange', () => { ZS.vib = $('zv_sis').value; ZS.vibmodo = 0; ZS.aba = 'vib'; zPainel(); zRecarregar(false); zUrl(); });
+  on('zv_modo', 'onchange', () => { ZS.vibmodo = +$('zv_modo').value; ZS.aba = 'vib'; zRecarregar(true); zUrl(); });
+  on('zv_amp', 'oninput', () => { ZS.vibamp = +$('zv_amp').value; zRecarregar(true); });
+  on('zv_set', 'onchange', () => { ZS.vibsetas = $('zv_set').checked; zRecarregar(true); }); on('zv_an', 'onchange', () => { ZS.vibanim = $('zv_an').checked; zRecarregar(true); });
+  on('zf_sel', 'onchange', () => { ZS.filme = $('zf_sel').value; ZS.quadro = 0; ZS.aba = 'filme'; zPainel(); zRecarregar(false); zUrl(); });
+  on('zf_sl', 'oninput', () => { ZS.quadro = +$('zf_sl').value; ZS.aba = 'filme'; zRecarregar(true); zFilmeInfo(); });
+  on('zf_play', 'onclick', () => {
+    const fp = $('zf_play');
+    if (zPlaying) { clearInterval(zPlaying); zPlaying = null; fp.textContent = t('tocar'); return; }
+    fp.textContent = t('pausarF'); ZS.aba = 'filme'; const F = D.filmes.find(f => f.id === (ZS.filme || $('zf_sel').value)); ZS.filme = F.id;
+    zPlaying = setInterval(() => { ZS.quadro = (ZS.quadro + 1) % F.idx.length; $('zf_sl').value = ZS.quadro; zRecarregar(true); zFilmeInfo(); }, 180);
+  });
+  zFilmeInfo();
+  $$('[data-vista]').forEach(b => b.onclick = () => zVista(zVetor(b.dataset.vista)));
+  on('zs_reset', 'onclick', () => { zV.zoomTo(); zV.render(); });
+  on('zs_spin', 'onchange', () => { ZS.spin = $('zs_spin').checked; zV.spin(ZS.spin); zSalvar(); });
+  on('zx_png', 'onclick', zPng); on('zx_xyz', 'onclick', () => zExportar('xyz')); on('zx_cif', 'onclick', () => zExportar('cif'));
+}
+function zFilmeInfo() {
+  const b = $('zf_info'); if (!b) return; const F = D.filmes.find(f => f.id === ZS.filme); if (!F) return;
+  const q = Math.min(ZS.quadro, F.idx.length - 1), k = filmeSerieX(F, q), E = F.serie.E[k];
+  b.textContent = `${t('quadro')} ${F.idx[q] + 1} ${t('de')} ${F.quadros_originais}` + (E != null ? ' · E = ' + fmt(E, 4) + ' eV' : '');
+}
+function zFundo() { if (!zV) return; zV.setBackgroundColor(ZS.fundo === 'claro' ? '#ffffff' : (ZS.fundo === 'escuro' ? '#0c1018' : css('--vbg'))); zV.render(); }
+function zUrl() {
+  try {
+    if (!zAberto) return;
+    const h = ZS.aba === 'vib' ? `#zoom=vib/${encodeURIComponent(ZS.vib)}/${ZS.vibmodo}` : (ZS.aba === 'filme' ? `#zoom=filme/${ZS.filme}/${ZS.quadro}` : `#zoom=${encodeURIComponent(ZS.est)}/${ZS.modo}`);
+    history.replaceState(null, '', h);
+  } catch (e) { /* ignora */ }
+}
+function abrirZoom(ctx) {
+  ctx = ctx || {};
+  if (ctx.aba === 'filme') Object.assign(ZS, {aba: 'filme', filme: ctx.filme, quadro: ctx.quadro || 0, est: ctx.est || ZS.est});
+  else if (ctx.aba === 'vib') Object.assign(ZS, {aba: 'vib', vib: ctx.vib, vibmodo: ctx.vibmodo || 0});
+  else Object.assign(ZS, {aba: 'estrutura', est: ctx.est || ZS.est, modo: ctx.modo || 'final'});
+  if (!EST[ZS.est] && D.est.length) ZS.est = D.est[0].id;
+  if (ctx.est && ctx.est !== ZS._ult) { ZS.isolar = ''; ZS.contatos = ''; }
+  ZS._ult = ZS.est;
+  zAberto = true; document.body.classList.add('zopen'); $('zoom').hidden = false;
+  if (!zV) { try { zV = $3Dmol.createViewer($('zv'), {backgroundColor: css('--vbg')}); } catch (e) { $('zv').innerHTML = `<div class="vazio" style="margin:40px">${t('semWebgl')}</div>`; } }
+  zFundo(); if (zV) zV.resize(); zSig = '';
+  $('zoom').classList.toggle('pcol', !ZS.painel);
+  zPainel(); zRecarregar(false); zUrl();
+  if (ctx.vista) setTimeout(() => zVista(zVetor(ctx.vista)), 80);
+}
+function fecharZoom() {
+  zAberto = false; $('zoom').hidden = true; document.body.classList.remove('zopen');
+  if (zPlaying) { clearInterval(zPlaying); zPlaying = null; }
+  if (zV) { zV.stopAnimate(); zV.spin(false); }
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignora */ }
+  zSalvar();
+}
+function zDoHash() {
+  const h = decodeURIComponent(location.hash || '');
+  let m = h.match(/^#zoom=vib\/([^/]+)\/(\d+)$/);
+  if (m) { abrirZoom({aba: 'vib', vib: m[1], vibmodo: +m[2]}); return; }
+  m = h.match(/^#zoom=filme\/([^/]+)\/(\d+)$/);
+  if (m) { abrirZoom({aba: 'filme', filme: m[1], quadro: +m[2]}); return; }
+  m = h.match(/^#zoom=([^/]+)(?:\/(final|ini|sob|disp))?(?:\/(a|b|c|n))?$/);
+  if (m && EST[m[1]]) { abrirZoom({est: m[1], modo: m[2] || 'final', vista: m[3]}); return; }
+  if (zAberto && !h) fecharZoom();
+}
+function iniciarZoom() {
+  $('zoom_pt').textContent = t('painelZ'); $('zoom_nova').textContent = t('novaAba'); $('zoom_x').textContent = t('fechar');
+  $('zoom_x').onclick = fecharZoom;
+  $('zoom_pt').onclick = () => { ZS.painel = !ZS.painel; $('zoom').classList.toggle('pcol', !ZS.painel); zSalvar(); setTimeout(() => { if (zV) { zV.resize(); zV.render(); } }, 50); };
+  $('zoom_nova').onclick = () => { zUrl(); window.open(location.href, '_blank'); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && zAberto) fecharZoom(); });
+  window.addEventListener('hashchange', zDoHash);
+  window.addEventListener('resize', () => { if (zAberto && zV) { zV.resize(); zV.render(); } });
+  zDoHash();
+}
+
+/* ---------- atualização automática (só por JS, adiada enquanto em uso) ---------- */
+function iniciarRecarga() {
+  const ind = $('reload_ind'), bt = $('reload_pausa');
+  const PER = D.meta.recarga_s * 1000, OCIOSO = 60000;
+  if (!(PER > 0)) { ind.textContent = ''; bt.style.display = 'none'; return; }
+  let ult = Date.now(), prox = Date.now() + PER, pausado = lsGet('pausa', false);
+  ['pointerdown', 'keydown', 'wheel', 'touchstart', 'input', 'change'].forEach(ev => window.addEventListener(ev, () => { ult = Date.now(); }, {passive: true, capture: true}));
+  const txt = () => {
+    const rest = prox - Date.now(), ocup = zAberto || (Date.now() - ult < OCIOSO);
+    if (pausado) return t('pausada');
+    if (rest > 0) return t('prox') + ' ' + String(Math.floor(rest / 60000)).padStart(2, '0') + ':' + String(Math.floor(rest % 60000 / 1000)).padStart(2, '0');
+    return ocup ? t('adiada') : t('atualizando');
+  };
+  const pinta = () => { ind.textContent = txt(); bt.textContent = pausado ? t('retomar') : t('pausar'); };
+  bt.onclick = () => { pausado = !pausado; lsSet('pausa', pausado); if (!pausado) prox = Date.now() + PER; pinta(); };
+  setInterval(() => { pinta(); if (!pausado && Date.now() >= prox && !zAberto && Date.now() - ult >= OCIOSO) { salvarEstado(); zSalvar(); location.reload(); } }, 1000);
+  pinta();
+}
+
+/* ---------- estado da página (sobrevive a recarregar) ---------- */
+function salvarEstado() {
+  try {
+    const o = {y: Math.round(window.scrollY)};
+    if ($('rep2')) o.r2 = {rep: $('rep2').value, est: $('est2').value, h: $('h2').checked, box: $('box2').checked, med: $('med2') ? $('med2').checked : true};
+    if ($('e_sis')) o.exp = {id: $('e_sis').value, modo: EX.modo, rep: $('e_rep').value, h: $('e_h').checked, view: EX.v ? EX.v.getView() : null};
+    if (FI.f) o.film = {id: FI.f.id, i: FI.i};
+    lsSet('pagina', o);
+  } catch (e) { /* ignora */ }
+}
+function restaurarEstado() {
+  const o = lsGet('pagina', null); if (!o) return;
+  try {
+    if (o.r2 && $('rep2')) { $('rep2').value = o.r2.rep; $('est2').value = o.r2.est || 'bastao'; $('h2').checked = o.r2.h !== false; $('box2').checked = o.r2.box !== false; if ($('med2')) $('med2').checked = o.r2.med !== false; window.__redes2(); }
+    if (o.exp && $('e_sis') && EST[o.exp.id]) {
+      $('e_sis').value = o.exp.id; $('e_rep').value = o.exp.rep || '1,1,1'; $('e_h').checked = o.exp.h !== false; EX.modo = o.exp.modo || 'final';
+      document.querySelectorAll('#e_modo button').forEach(x => x.classList.toggle('on', x.dataset.m === EX.modo));
+      exploradorRender(false); if (o.exp.view && EX.v) { EX.v.setView(o.exp.view); EX.v.render(); }
+    }
+    if (o.film && FI.f && D.filmes.some(f => f.id === o.film.id)) { filmeEscolher(o.film.id); if (o.film.i < FI.f.idx.length) filmeQuadro(o.film.i); }
+    if (o.y && !location.hash) setTimeout(() => window.scrollTo(0, o.y), 250);
+  } catch (e) { /* estado antigo incompatível */ }
+}
+
+/* ---------- redesenho (tema) e partida ---------- */
+function redesenharTudo() {
+  desenharEnergia(); desenharRanking(); desenharMedChart(); desenharFreq();
+  JOBS_PLOT.forEach(([id, j]) => { if ($(id)) scfPlot(id, j); });
+  const bg = css('--vbg');
+  [...V2.map(d => d.v), EX.v, FI.v, vibV].filter(Boolean).forEach(v => { v.setBackgroundColor(bg); v.render(); });
+  if (FI.f) filmeGraficos();
+  zFundo();
+}
+const SECOES = {aqui: secAqui, reac: secReac, expl: secExpl, filme: secFilme, energia: secEnergia, ranking: secRanking, medidas: secMedidas, freq: secFreq, fila: secFila, metodos: secMetodos, gloss: secGloss};
+ORDEM.forEach(k => { try { SECOES[k](); } catch (e) { console.error(e); window.__erros.push(k + ': ' + e.message); const b = $('erro_js'); b.style.display = 'block'; b.textContent = 'Erro de JavaScript no painel: ' + window.__erros.join('\n'); } });
+ligarUnidades(); atualizarEnergias();
+iniciarZoom(); iniciarRecarga(); restaurarEstado();
+setInterval(salvarEstado, 2000);
+window.addEventListener('beforeunload', salvarEstado);
+window.addEventListener('resize', () => { [...V2.map(d => d.v), EX.v, FI.v, vibV].filter(Boolean).forEach(v => { v.resize(); v.render(); }); });
+window.__pronto = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+3Dmol-min.js  3Dmol.js 2.4.0  (cdnjs) — BSD-3-Clause, ver LICENSE-3Dmol.txt
+plotly.min.js plotly.js 4.0.0 (pacote plotly.py 7.0.0) — MIT, ver LICENSE-plotly.txt
