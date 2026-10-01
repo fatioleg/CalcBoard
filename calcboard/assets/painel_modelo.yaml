@@ -1,4 +1,4 @@
-# painel.yaml — modelo comentado da skill painel-calculos. Apague o que não usar: cada seção só aparece se houver dado.
+# painel.yaml — modelo comentado da skill calcboard. Apague o que não usar: cada seção só aparece se houver dado.
 # Referência completa: references/formato-config.md.  Gerar:  python <skill>/scripts/painel.py gerar painel.yaml
 titulo: "Painel dos cálculos — <projeto>"
 subtitulo: "Uma frase dizendo a pergunta que os cálculos respondem."

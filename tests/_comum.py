@@ -8,7 +8,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-SKILL = RAIZ / "painel-calculos"
+SKILL = RAIZ / "calcboard"
 SCRIPTS = SKILL / "scripts"
 PAINEL_PY = SCRIPTS / "painel.py"
 CAPTURA_PY = SCRIPTS / "captura.py"

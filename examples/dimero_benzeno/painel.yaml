@@ -1,5 +1,5 @@
-# Exemplo da skill painel-calculos: dímero de benzeno (sistema público, dados REAIS gerados por gerar_dados.py).
-# Gere o painel com:  python ../../painel-calculos/scripts/painel.py gerar painel.yaml
+# Exemplo da skill calcboard: dímero de benzeno (sistema público, dados REAIS gerados por gerar_dados.py).
+# Gere o painel com:  python ../../calcboard/scripts/painel.py gerar painel.yaml
 titulo: "Dímero de benzeno: quanto dois anéis se atraem?"
 subtitulo: "Monômeros de benzeno → dímero (empilhado deslocado, sanduíche, em T). UMA (rede neural) para explorar; DFT B97-3c (ORCA) para conferir."
 lang: pt

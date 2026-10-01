@@ -1,4 +1,4 @@
-# painel-calculos
+# CalcBoard
 
 Skill do [Claude Code](https://claude.com/claude-code) que transforma as saídas de cálculos de estrutura eletrônica e
 simulação atomística (moléculas, cristais, superfícies, aglomerados) num **painel HTML único, offline, interativo e
@@ -56,15 +56,15 @@ Em todo o painel:
 | ASE (extxyz, traj, cif, POSCAR/CONTCAR, xyz) | geometria, célula, energia/forças/tensão quando presentes |
 | JSON / JSONL | progresso de otimização por passo, frequências, registros, fila ao vivo |
 
-Detalhes e limitações: [`painel-calculos/references/leitores.md`](painel-calculos/references/leitores.md).
+Detalhes e limitações: [`calcboard/references/leitores.md`](calcboard/references/leitores.md).
 ORCA e ASE foram testados com saídas reais (exemplo do dímero de benzeno); CP2K, VASP, Gaussian e QE com amostras
 sintéticas curtas (`examples/amostras/`, recriadas por `gerar_amostras.py`).
 
 ## Instalação
 
 ```bash
-git clone https://github.com/fatioleg/painel-calculos.git
-cp -r painel-calculos/painel-calculos ~/.claude/skills/        # a skill é a pasta painel-calculos/ interna
+git clone https://github.com/fatioleg/CalcBoard.git
+cp -r CalcBoard/calcboard ~/.claude/skills/        # a skill é a pasta calcboard/ interna
 pip install numpy ase pyyaml                                   # ase: formatos ASE; pyyaml: configuração .yaml
 pip install playwright && playwright install chromium          # opcional: conferência por captura headless
 ```
@@ -75,7 +75,7 @@ runs"*. A skill descobre as saídas, escreve a configuração, gera o HTML e con
 ## Uso direto
 
 ```bash
-S=~/.claude/skills/painel-calculos/scripts
+S=~/.claude/skills/calcboard/scripts
 python $S/painel.py descobrir minha_pasta -o painel.yaml   # rascunho de configuração a partir das saídas
 python $S/painel.py ler calc/opt.out                       # diagnóstico: o que o leitor extrai do arquivo
 python $S/painel.py init                                   # modelo comentado de painel.yaml
@@ -99,10 +99,10 @@ energia:
     - {nome: "Energia de reação", expr: "E_P - E_R", explicacao: "Negativa: a reação libera energia."}
 ```
 
-Todas as chaves: [`references/formato-config.md`](painel-calculos/references/formato-config.md) ·
-estrutura comum dos dados: [`references/formato-dados.md`](painel-calculos/references/formato-dados.md) ·
+Todas as chaves: [`references/formato-config.md`](calcboard/references/formato-config.md) ·
+estrutura comum dos dados: [`references/formato-dados.md`](calcboard/references/formato-dados.md) ·
 boas práticas (comparar métodos na mesma geometria, rotular o exploratório, critério de convergência por programa):
-[`references/boas-praticas.md`](painel-calculos/references/boas-praticas.md).
+[`references/boas-praticas.md`](calcboard/references/boas-praticas.md).
 
 ## Exemplos
 
@@ -126,7 +126,7 @@ Os testes de navegador são pulados se não houver Playwright/Chromium.
 ## Estrutura do repositório
 
 ```
-painel-calculos/            a skill (copie esta pasta para ~/.claude/skills/)
+calcboard/            a skill (copie esta pasta para ~/.claude/skills/)
   SKILL.md                  gatilhos e fluxo para o Claude
   scripts/painel.py         CLI: gerar, descobrir, ler, init
   scripts/captura.py        conferência headless
@@ -141,13 +141,13 @@ docs/                       capturas de tela
 ## Licença
 
 Apache-2.0 ([LICENSE](LICENSE)). 3Dmol.js (BSD-3-Clause) e plotly.js (MIT) são redistribuídos com suas licenças em
-`painel-calculos/assets/vendor/`.
+`calcboard/assets/vendor/`.
 
 ---
 
 ## English summary
 
-**painel-calculos** is a Claude Code skill (and standalone Python tool) that turns electronic-structure / atomistic
+**CalcBoard** is a Claude Code skill (and standalone Python tool) that turns electronic-structure / atomistic
 simulation outputs into a **single, offline, interactive HTML dashboard**. It reads ORCA, CP2K, VASP, Gaussian,
 Quantum ESPRESSO, ASE formats (extxyz, traj, cif, POSCAR, xyz) and generic JSON/JSONL, driven by a small YAML/JSON
 configuration. Sections (shown only when there is data): workflow status with dependencies and ETA, reactants →
@@ -160,9 +160,9 @@ region isolation, exports, `#zoom=` deep links), auto-reload, light/dark theme, 
 (`lang: en`). The dashboard is read-only and a failing reader becomes a warning, never a crash.
 
 ```bash
-cp -r painel-calculos/painel-calculos ~/.claude/skills/
-python ~/.claude/skills/painel-calculos/scripts/painel.py descobrir my_runs -o painel.yaml
-python ~/.claude/skills/painel-calculos/scripts/painel.py gerar painel.yaml
+cp -r CalcBoard/calcboard ~/.claude/skills/
+python ~/.claude/skills/calcboard/scripts/painel.py descobrir my_runs -o painel.yaml
+python ~/.claude/skills/calcboard/scripts/painel.py gerar painel.yaml
 ```
 
 Licensed under Apache-2.0.

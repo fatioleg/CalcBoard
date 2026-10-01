@@ -1,5 +1,5 @@
 # Synthetic samples (fictitious numbers, realistic output layouts) used to exercise every reader.
-# English version of the dashboard: lang: en.   Generate:  python ../../painel-calculos/scripts/painel.py gerar painel.yaml
+# English version of the dashboard: lang: en.   Generate:  python ../../calcboard/scripts/painel.py gerar painel.yaml
 titulo: "Reader test bench: CP2K, VASP, Gaussian, Quantum ESPRESSO, ORCA"
 subtitulo: "SYNTHETIC outputs (made-up numbers) plus a truncated real ORCA run. Nothing here is a scientific result."
 lang: en
