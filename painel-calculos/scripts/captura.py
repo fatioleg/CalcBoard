@@ -143,8 +143,16 @@ def via_playwright(url, saida, largura, altura, secao, espera, tema, js_extra, a
         erros += pg.evaluate("window.__erros || []")
         if avaliar:
             print("avaliar:", json.dumps(pg.evaluate(avaliar), ensure_ascii=False)[:2000])
-        inteira = not (secao or js_extra or "#zoom" in url)
-        pg.screenshot(path=saida, full_page=inteira)
+        if not (secao or js_extra or "#zoom" in url):
+            # página inteira: aumenta a janela até a altura do documento. Acima de ~8000 px o Chromium com telas
+            # WebGL repete blocos na imagem; por isso o limite (o resto: capture por seção com --secao)
+            h_doc = int(pg.evaluate("document.documentElement.scrollHeight"))
+            h = min(h_doc, 8000)
+            if h_doc > h:
+                print(f"nota: página com {h_doc} px; captura limitada a {h} px (use --secao para as seções seguintes)")
+            pg.set_viewport_size({"width": largura, "height": max(h, altura)})
+            pg.wait_for_timeout(2500)
+        pg.screenshot(path=saida)
         b.close()
     return list(dict.fromkeys(erros))
 
@@ -198,6 +206,9 @@ def main(argv=None):
         print(f"{a.saida} (Chrome/Edge; erros de JavaScript não verificados)")
         return
     print(f"{a.saida}  ({len(erros)} erro(s) de JavaScript)")
+    if any("_gl is null" in e or "WebGL" in e for e in erros):
+        print("  nota: o navegador headless não tem WebGL nesta máquina (os visualizadores 3D não desenham);"
+              " instale `pip install playwright` (Chromium com SwiftShader) para uma conferência completa")
     for e in erros:
         print("  JS:", e)
     sys.exit(2 if erros else 0)
