@@ -315,7 +315,10 @@ class Montador:
             for padrao in as_list(e.get("arquivos")):
                 for arq in self.expandir(padrao):
                     R = LEITURA.ler(arq)
-                    itens.append((L.estado_final(R, self.ativo_s) if R["estado"] != "ausente" else "pendente",
+                    st_arq = L.estado_final(R, self.ativo_s)
+                    if st_arq in ("ilegivel", "desconhecido"):
+                        st_arq = "concluido"          # artefato presente, sem estado próprio legível: conta como feito
+                    itens.append((st_arq if R["estado"] != "ausente" else "pendente",
                                   R.get("inicio"), R.get("fim") or (R.get("mtime") if R["estado"] == "concluido" else None), R.get("duracao_s"),
                                   R.get("mtime")))
             for ident in as_list(e.get("estruturas")):
@@ -389,8 +392,22 @@ class Montador:
                         continue
                     metas.append({"arquivo": arq.name, "quando": V.get("quando"), "log": (V.get("fila_log") or [])[-10:],
                                   "grupo": ent.get("grupo")})
+                    vistos = set()
                     for j in V.get("jobs", []):
                         jobs.append(self._job_vivo(j, V.get("quando"), ent))
+                        vistos.add(jobs[-1]["nome"])
+                    nomes = []                       # jobs previstos que o JSON ainda não cita: pendentes
+                    for lst in as_list(ent.get("nomes_de")):
+                        for f in self.expandir(lst):
+                            if f.exists():
+                                nomes += [l.strip() for l in f.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")]
+                    for pd in as_list(ent.get("pastas")):
+                        nomes += [d.name for d in self.expandir(pd) if d.is_dir()]
+                    for nm in nomes:
+                        if nm not in vistos:
+                            vistos.add(nm)
+                            jobs.append({"nome": nm, "estado": "pendente", "grupo": ent.get("grupo"), "scf": [],
+                                         "selo": self.selo({"programa": ent.get("programa"), "versao": None, "nivel": {}}, ent.get("nivel"))})
                 continue
             for arq in self.expandir(ent.get("saida") or ent.get("arquivo")):
                 if arq.is_dir():
@@ -618,6 +635,15 @@ class Montador:
                 refv, reff = float(ref["valor"]), ref.get("fonte") or self.T["digitado"]
             elif isinstance(ref, dict) and "estrutura" in ref:
                 reff = ref["estrutura"]
+            elif isinstance(ref, dict) and "json" in ref:
+                try:
+                    d = json.loads(self.caminho(ref["json"]).read_text(encoding="utf-8"))
+                    for k2 in str(ref.get("caminho", "")).split("."):
+                        if k2:
+                            d = d[int(k2)] if isinstance(d, list) else d[k2]
+                    refv, reff = float(d), ref.get("fonte") or Path(ref["json"]).name
+                except Exception as ex:  # noqa: BLE001
+                    self.aviso(f"{mid}: referência ilegível ({ex})")
             out["defs"].append({"id": mid, "nome": md.get("nome") or mid, "tipo": md.get("tipo", "distancia"), "un": un,
                                 "dig": md.get("casas", 3 if un == "Å" else 1), "tol": md.get("tolerancia"), "ref": refv,
                                 "ref_fonte": reff, "ref_est": ref.get("estrutura") if isinstance(ref, dict) else None,

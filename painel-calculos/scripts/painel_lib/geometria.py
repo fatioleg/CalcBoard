@@ -29,7 +29,7 @@ def formula(simbolos):
     from collections import Counter
     c = Counter(simbolos)
     ordem = (["C", "H"] if "C" in c else []) + sorted(k for k in c if not ("C" in c and k in ("C", "H")))
-    return "".join(f"{k}{c[k] if c[k] > 1 else ''}" for k in ordem)
+    return "".join(f"{k}{c[k] if c[k] > 1 else ''}" for k in ordem if c[k] > 0)
 
 
 def ligacoes(simbolos, pos, cel=None, mult=1.15, maximo_atomos=6000):
