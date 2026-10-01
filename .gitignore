@@ -1,0 +1,17 @@
+# arquivos locais da tarefa (podem citar projetos privados)
+PROMPT_TAREFA.md
+RELATORIO.md
+RELATORIO_execucao.log
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# temporários do gerador / ORCA / ASE
+*.tmp
+*.gbw
+*.densities
+*.densitiesinfo
+*.property.txt
+examples/dimero_benzeno/calc/uma/freq/cache_*/
+painel.html.tmp
