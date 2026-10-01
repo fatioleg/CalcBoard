@@ -1,0 +1,23 @@
+(() => { const r = [];
+  const passo = (n, f) => { try { f(); r.push(n + ':ok'); } catch (e) { r.push(n + ':ERRO ' + e.message); } };
+  passo('abrir', () => abrirZoom({est: 'dimero_T_p0'}));
+  passo('isolar', () => { ZS.isolar = '0'; ZS.raio = 3; zRecarregar(false); });
+  passo('contatos', () => { ZS.contatos = '0'; zRecarregar(true); });
+  passo('rotulos', () => { ZS.rotulos = true; zRecarregar(true); });
+  passo('estilo', () => { ZS.estilos['benzeno'] = 'esfera'; zRecarregar(true); });
+  passo('sob', () => { ZS.modo = 'sob'; zRecarregar(true); });
+  passo('disp', () => { ZS.modo = 'disp'; zRecarregar(true); });
+  passo('medclique', () => { ZS.medmodo = 'ang'; const a = zV.getModel().selectedAtoms({}); zClick(a[0]); zClick(a[1]); zClick(a[2]); if (!ZMED.length) throw new Error('sem medida'); });
+  passo('vistas', () => { ['a','b','c','n'].forEach(q => zVista(zVetor(q))); });
+  passo('export_xyz', () => { window.__blob = 0; const o = URL.createObjectURL; URL.createObjectURL = b => { window.__blob++; return o(b); }; zExportar('xyz'); });
+  passo('png', () => { const u = zV.pngURI(); if (!u || u.length < 1000) throw new Error('png vazio'); });
+  passo('filme', () => { ZS.aba = 'filme'; ZS.filme = D.filmes[1].id; ZS.quadro = 2; zPainel(); zRecarregar(false); });
+  passo('vib', () => { ZS.aba = 'vib'; ZS.vib = 'bz_dft'; ZS.vibmodo = 10; zPainel(); zRecarregar(false); });
+  passo('fechar', () => fecharZoom());
+  passo('unidade', () => { setUnit('kcal'); setUnit('ev'); setUnit('kj'); });
+  passo('tema', () => { document.documentElement.setAttribute('data-theme', 'dark'); redesenharTudo(); });
+  passo('variante', () => { VAR = D.energia.variantes[1]; desenharEnergia(); });
+  passo('explorador', () => { abrirNoExplorador('dimero_S_p1'); EX.modo = 'disp'; exploradorRender(true); });
+  passo('filme_play', () => { filmeEscolher(D.filmes[2].id); filmeQuadro(1); });
+  passo('fq', () => fqEscolher(3, 20));
+  return r.concat(window.__erros); })()
