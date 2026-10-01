@@ -120,11 +120,9 @@ def via_playwright(url, saida, largura, altura, secao, espera, tema, js_extra, a
     erros = []
     with sync_playwright() as p:
         b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
-        pg = b.new_page(viewport={"width": largura, "height": altura})
+        pg = b.new_page(viewport={"width": largura, "height": altura}, color_scheme=tema or "light")
         pg.on("pageerror", lambda e: erros.append(str(e)))
         pg.on("console", lambda m: erros.append(m.text) if m.type == "error" else None)
-        if tema:
-            pg.add_init_script(f"try{{localStorage.setItem('painel_tema_forcado','{tema}')}}catch(e){{}}; document.documentElement.setAttribute('data-theme','{tema}');")
         pg.goto(url, wait_until="load")
         try:
             pg.wait_for_function("window.__pronto === true", timeout=espera * 1000)
