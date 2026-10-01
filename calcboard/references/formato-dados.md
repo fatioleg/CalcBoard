@@ -53,6 +53,8 @@ Só para arquivos `.jsonl`, `R` traz também `progresso` (ver 2.1).
 | `E_eV` | float \| None | energia do quadro, em eV |
 | `fmax` | float \| None | força máxima, em eV/Å (ver o aviso abaixo) |
 | `sigma_GPa` | float \| None | tensão máxima (maior \|componente\| de Voigt), em GPa |
+| `F` | array (N, 3) \| None | **forças** por átomo, em eV/Å (ORCA: −gradiente de `CARTESIAN GRADIENT` ou `.engrad`; CP2K: `ATOMIC FORCES`; VASP: `TOTAL-FORCE`; ASE: `get_forces`; Gaussian: só com `NoSymm`). `None` se o arquivo não as traz |
+| `S` | array (6,) \| None | **tensão** completa em Voigt (xx yy zz yz zx xy), em GPa, convenção do ASE (tração positiva); `None` sem célula/stress |
 | `t` | | reservado (normalmente `None`) |
 
 > Atenção: `fmax` **não é a mesma grandeza em todos os programas**. Para ASE e VASP é o maior módulo de força de um átomo; para
@@ -213,3 +215,27 @@ Em `atoms.info` (linha de comentário do extxyz), o leitor ASE procura:
 
 Gravar essas chaves ao salvar a estrutura é a forma de o selo de nível sair completo para resultados de MLIPs, sem declarar nada
 na configuração.
+
+### 2.7 Erro de força por átomo já calculado (`forcas.precalculado`)
+
+Para quando o erro de força não vem de dois cálculos que o painel lê (por exemplo, um diagnóstico feito por outro script), um
+JSON qualquer que contenha, no caminho indicado por `caminho` (chaves separadas por ponto; índices numéricos para listas), **uma lista de N números**
+(|ΔF| de cada átomo, na ordem dos átomos da estrutura):
+
+```json
+{"sistemas": {"cristal_A": {"arrays": {"dF_eV_A": [0.012, 0.031, 0.008]}}}}
+```
+
+```yaml
+forcas:
+  precalculado:
+    - {estrutura: cristal_A, json: diagnostico.json, caminho: "sistemas.cristal_A.arrays.dF_eV_A", unidade: "eV/Å"}
+```
+
+`unidade` é `eV/Å` (padrão) ou `meV/Å`. O número de valores precisa ser o número de átomos da estrutura; senão o item é recusado com aviso.
+
+### 2.8 Arquivo `.engrad` do ORCA
+
+Ao lado de uma saída `.out` do ORCA sem bloco `CARTESIAN GRADIENT`, o leitor usa `<nome>.engrad` (bloco
+`# The current gradient in Eh/bohr`, 3N números, um por linha). A força é o gradiente com sinal trocado, convertida para eV/Å;
+o número de átomos precisa coincidir com o da geometria.

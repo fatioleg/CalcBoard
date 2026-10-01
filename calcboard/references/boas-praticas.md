@@ -10,7 +10,7 @@ O painel **nunca modifica arquivos de cálculo**: lê saídas, trajetórias e JS
 apontado para pastas de cálculos em andamento (`painel.py gerar painel.yaml --vigiar 120` regenera a cada 120 s) sem risco para
 elas. O HTML é um arquivo único e offline; ele reflete os arquivos **no instante da geração** (veja "Gerado em" no cabeçalho).
 
-## 1. Compare métodos na MESMA geometria (regra C-073)
+## 1. Compare métodos na MESMA geometria
 
 Uma diferença de energia entre dois métodos (por exemplo, um potencial de aprendizado de máquina e DFT) mistura dois erros: o
 da **energia** (o método descreve mal a superfície) e o da **geometria** (cada método otimiza para uma geometria diferente). Para
@@ -26,7 +26,7 @@ termos). O exemplo `examples/dimero_benzeno/painel.yaml` tem as variantes "B97-3
 e a etapa E5 "DFT na geometria do UMA".
 
 O código **avisa, mas não impede**, a mistura de níveis: se uma expressão (parcela, nível de diagrama ou ranking) combina termos de
-selos diferentes, aparece o aviso `C-073 · '<expressão>' <variante> mistura resultados de níveis de cálculo diferentes: ...`
+selos diferentes, aparece o aviso `aviso de níveis · '<expressão>' <variante> mistura resultados de níveis de cálculo diferentes: ...`
 (chave interna `av_mistura`). Tome o aviso como erro de método até prova em contrário. Observe que "número digitado" conta como
 um selo próprio, e que uma mudança de versão do programa também muda o selo.
 
@@ -139,7 +139,7 @@ Uma otimização local encontra o mínimo mais próximo da partida. Para não co
 ## 9. Antes de confiar em um painel
 
 1. Rode `painel.py ler` nos arquivos e compare programa, versão, nível, energia e critério com o que o próprio programa imprimiu.
-2. Leia a faixa de **avisos** do painel: arquivos ilegíveis, termos sem energia, misturas de nível (C-073) e glob sem arquivos
+2. Leia a faixa de **avisos** do painel: arquivos ilegíveis, termos sem energia, misturas de nível e glob sem arquivos
    aparecem ali e não impedem a geração.
 3. Lembre quais leitores foram validados em saídas reais (ORCA 6.1.1 e ASE/MLIP) e quais só em amostras sintéticas (CP2K, VASP, Gaussian,
    QE): veja `leitores.md`. Para os últimos, confira ao menos uma saída real sua antes de usar números em texto.
@@ -147,3 +147,32 @@ Uma otimização local encontra o mínimo mais próximo da partida. Para não co
 5. Guarde a configuração (`painel.yaml`) com o projeto: o HTML é reproduzível a partir dela e dos arquivos de saída; corrija a
    configuração, não o HTML.
 6. Ao citar um resultado, cite também o selo (nível · programa versão) e a data de geração do painel.
+
+## 10. Validação método × referência: o que o erro de força diz (e o que não diz)
+
+- **Mesma geometria.** O erro de força (`forcas`) só vale entre dois cálculos no **mesmo ponto**; o painel recusa pares cujas
+  geometrias diferem além de `tol_geom`. Numa geometria que o método avaliado otimizou, as forças dele são ~0 e o erro é
+  basicamente a força da referência ali: isso mede o quanto a geometria do método avaliado é um mínimo *da referência*.
+- **Olhe onde o erro está**, não só o MAE: por elemento, por molécula/componente e a concentração nos piores átomos. Um MAE
+  "aceitável" que vem de poucos átomos (grupos terminais, íons) é outro problema que um MAE "ótimo" espalhado.
+- **Faixas de qualidade são sua escolha.** O padrão da skill (≤ 30 / ≤ 50 / ≤ 100 meV/Å) é um ponto de partida; declare as
+  suas em `validacao.bandas` **antes** de ver os resultados e cite a fonte no texto. O painel diz quando está usando o padrão.
+- **Energia absoluta não se compara entre métodos.** Use energias **relativas** a um arranjo de referência
+  (`comparacao_energia`) e olhe também a **ordem**: Spearman/Kendall e se os dois métodos concordam sobre qual arranjo é o mais
+  estável. Um MAE pequeno com a ordem trocada pode ser o pior dos mundos quando a pergunta é qual arranjo ganha.
+- **Réplicas de um mesmo arranjo** ocupam o mesmo ponto no gráfico: use `itens` explícitos (um por arranjo) para legibilidade e
+  deixe a dispersão entre réplicas para o ranking.
+
+## 11. Regras de decisão: fixe a estatística antes de ver os dados
+
+- **Escreva a regra antes.** Grandezas, estatística e limiares de `regras` devem estar fixados **antes** de olhar o resultado.
+  Marque `pre_registrada: true` nesse caso. Se a definição foi escolhida **depois** de ver os números (por exemplo, "o erro é o
+  máximo, não o MAE", porque assim o veredito saía como se queria), declare `pre_registrada: false` **e mostre a sensibilidade**
+  às definições alternativas em `sensibilidade`: o painel avisa se você declarou "depois" sem a tabela, e o cartão diz se o
+  veredito muda conforme a definição. Um veredito que só existe numa definição não é um resultado, é uma escolha.
+- **Margem, não só o rótulo.** "Estabelecido" a 0,1 do limiar e "estabelecido" a 20 vezes o limiar não são a mesma conclusão: leia
+  a margem do cartão.
+- **Sem grandeza, sem veredito.** Se uma grandeza ainda não pode ser calculada, o cartão não presume o resultado; não preencha o
+  buraco com um número digitado só para o cartão fechar.
+- **Ressalvas junto do resultado.** Limitações conhecidas (comparação em geometria de um dos métodos, nível de teoria, definição
+  tardia) vão em `ressalvas`, atreladas à seção ou à estrutura, e aparecem também na etiqueta do modo Ampliar.

@@ -52,6 +52,41 @@ energia:
 ranking:
   - {titulo: "Confôrmeros", grupo: conformeros, por_fu: false}
 
+# --- Validação método × referência (dois cálculos na MESMA geometria: ex.: MLIP × DFT) ---
+# forcas:
+#   pares:
+#     - {id: f1, a: mlip_x, b: dft_x, sistema: "Sistema X", rotulo_a: "MLIP", rotulo_b: "DFT"}   # a = avaliado, b = referência
+#     # - {id: "f_{item}", a_grupo: mlip, b: "dft_{item}"}                                      # um par por estrutura do grupo
+#   # precalculado: [{estrutura: x, json: dF.json, caminho: "a.b", unidade: "meV/Å"}]           # |ΔF| por átomo já calculado
+# validacao:
+#   bandas:                                  # sem isto: padrão da skill (30/50/100 meV/Å), rotulado como padrão
+#     forca_mae: {limites: [30, 50, 100], unidade: "meV/Å"}
+# comparacao_energia:                        # energia RELATIVA a um arranjo de referência, nos dois métodos
+#   - id: c1
+#     titulo: "Arranjos: MLIP × DFT"
+#     rotulo_a: "MLIP"
+#     rotulo_b: "DFT"
+#     referencia: "A"
+#     itens: [{rotulo: "A", a: mlip_A, b: dft_A}, {rotulo: "B", a: mlip_B, b: dft_B}, {rotulo: "C", a: mlip_C, b: dft_C}]
+# regras:                                    # fixe a estatística ANTES de ver os dados (pre_registrada)
+#   - id: r1
+#     titulo: "A é mais estável que B?"
+#     pre_registrada: true
+#     grandezas:
+#       R: {nome: "E(B) − E(A)", expr: "EB - EA", unidade: "kJ/mol"}
+#       EA: {estrutura: dft_A, unidade: "kJ/mol"}
+#       EB: {estrutura: dft_B, unidade: "kJ/mol"}
+#       U: {nome: "incerteza", comparacao: "c1.max_abs", unidade: "kJ/mol"}
+#     estatistica: {nome: "T = R / U", expr: "R / U"}
+#     resultados:
+#       - {id: sim, rotulo: "estabelecido", quando: "T >= 2", severidade: ok}
+#       - {id: nao, rotulo: "refutado", quando: "T <= -2", severidade: bad}
+#       - {id: talvez, rotulo: "inconclusivo", severidade: warn}
+#     sensibilidade:
+#       - {rotulo: "erro = MAE", grandezas: {U: {comparacao: "c1.mae", unidade: "kJ/mol"}}}
+# ressalvas:                                 # por seção (secoes), por estrutura (estruturas) ou globais
+#   - {texto: "Limitação conhecida.", severidade: warn, secoes: [valid, regra]}
+
 # medidas:
 #   - {id: d1, nome: "Distância centroide–centroide", tipo: distancia, a: "mol:1&el:C", b: "mol:2&el:C",
 #      referencia: {valor: 3.9, fonte: "raio X"}, tolerancia: [0.1, 0.25]}

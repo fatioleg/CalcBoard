@@ -72,6 +72,9 @@ Um `.out` que não casa com nenhum programa cai no ASE e, falhando, vira "não c
   quadros, ele substitui os quadros do `.out` (nota registrada em `extra.notas`).
 - **SCF:** iterações do último bloco (E, ΔE, RMS-DP, tempo). Critério `TolE`, comparado com |ΔE|; `TolRMSP` fica em
   `extra.tolRMSP`.
+- **Forças:** blocos `CARTESIAN GRADIENT` (Eh/bohr, impressos com `EnGrad`/`Opt`) viram forças em eV/Å (força = −gradiente) no
+  quadro do ciclo correspondente; sem bloco, usa `<nome>.engrad` ao lado. Testado em saídas reais de B97-3c `EnGrad`
+  (`examples/dimero_benzeno/calc/orca/sp_na_geometria_uma/`).
 - **Convergência da otimização:** "THE OPTIMIZATION HAS CONVERGED" (sim) ou "did not converge but reached the maximum number"
   (não). **Duração:** `TOTAL RUN TIME`.
 - **Término:** "ORCA TERMINATED NORMALLY" = concluído; "error termination", "ABORTING THE RUN" ou "ERROR !!!" = falhou.
@@ -190,3 +193,16 @@ Lidos por um leitor próprio e tolerante ao comentário; energia extraída de `E
 - O SCF é mostrado na unidade do programa: Eh (ORCA, Gaussian), Ha (CP2K), Ry (QE), eV (VASP).
 - O critério de SCF de cada programa compara uma **coluna diferente** (tabela em `formato-dados.md` §1.2); o painel mostra a
   coluna correta junto do critério, e o nome e a nota do critério aparecem no cartão de métodos.
+
+## Forças e tensão por programa (para `forcas`)
+
+| Leitor | Forças (`F`, eV/Å) | Tensão (`S`, GPa) |
+|---|---|---|
+| ORCA | `CARTESIAN GRADIENT` (−gradiente) ou `.engrad` ao lado; testado em saídas reais | — |
+| ASE (extxyz, traj, `espresso-out`, vasprun...) | `get_forces` (sem aplicar restrições), se houver calculador | `get_stress`, Voigt do ASE |
+| VASP (`OUTCAR`) | `TOTAL-FORCE` de cada passo | `in kB` convertido ao sinal do ASE (como o próprio leitor do ASE) |
+| CP2K | `ATOMIC FORCES in [a.u.]` (forças, Ha/bohr): um bloco por quadro, ou só o último quadro se os números não coincidem | — |
+| Gaussian | `Forces (Hartrees/Bohr)` **somente com `NoSymm`** na rota (sem isso a orientação do bloco é incerta e as forças são recusadas) | — |
+
+Forças só são comparadas entre dois cálculos se os átomos, a ordem e a geometria coincidem (`forcas.tol_geom`): outra orientação
+(por exemplo, de um programa que reorienta a molécula) é recusada com aviso em vez de gerar um erro falso.

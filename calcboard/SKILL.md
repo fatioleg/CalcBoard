@@ -5,7 +5,9 @@ description: >-
   atomística de um projeto (moléculas, cristais, superfícies, aglomerados): etapas e estado (concluído/rodando/
   pendente/falhou, ETA), reagentes → produtos em 3D, explorador de geometrias inicial × final, filme da otimização,
   perfil/ciclo de energia, ranking de confôrmeros, distâncias e medidas, frequências vibracionais com modos animados,
-  fila de cálculos com SCF ao vivo, métodos e glossário. Lê ORCA, CP2K, VASP, Gaussian, QE, ASE e JSON. Use sempre que o usuário pedir "CalcBoard", "painel de cálculos", "painel dos
+  fila de cálculos com SCF ao vivo, métodos e glossário, e — quando há dois métodos no mesmo ponto — erro de força por
+  átomo (|ΔF|), validação método × referência, energia relativa entre métodos e cartão de regra de decisão com ressalvas.
+  Lê ORCA, CP2K, VASP, Gaussian, QE, ASE e JSON. Use sempre que o usuário pedir "CalcBoard", "painel de cálculos", "painel dos
   cálculos", "visualizar cálculos", "ver geometrias otimizadas", "perfil de energia", "diagrama de energia",
   "acompanhar os cálculos", "ver as frequências", ou em inglês
   "calculation dashboard", "visualize calculations", "show optimized geometries", "energy profile",
@@ -34,7 +36,12 @@ Caminhos abaixo são relativos a esta skill (`<skill>` = pasta deste arquivo).
    - `etapas` com `depende_de` e `nota` em linguagem simples (é o que vira o "Você está aqui");
    - `energia.termos` (lidos das estruturas ou de JSON; `valor:` só para números da literatura, marcado como digitado),
      `variantes` por nível de cálculo, `diagramas` (níveis ou perfil R→TS→P) e `parcelas` com explicação;
-   - `medidas` (distância, centroides, planos, deslizamento, ângulos), `ranking`, `frequencias`, `fila`.
+   - `medidas` (distância, centroides, planos, deslizamento, ângulos), `ranking`, `frequencias`, `fila`;
+   - **método × referência** (só se houver dois cálculos no MESMO ponto): `forcas` (erro de força por átomo), `validacao`
+     (faixas de qualidade suas), `comparacao_energia` (energia relativa e ordem dos arranjos nos dois métodos), `regras`
+     (veredito com margem e sensibilidade; **fixe a estatística antes de ver os dados**: `pre_registrada`) e `ressalvas`
+     (limitações junto da seção, estrutura ou resultado). Nunca invente uma faixa de qualidade: pergunte ao usuário ou
+     use o padrão rotulado como padrão.
    - `nivel:` só quando o arquivo não registra o método (vira selo "declarado na configuração").
    Siga `references/boas-praticas.md` (comparar métodos na mesma geometria, rotular o exploratório, critério de
    convergência certo por programa). O que cada leitor extrai e suas limitações: `references/leitores.md`.
@@ -49,6 +56,9 @@ Caminhos abaixo são relativos a esta skill (`<skill>` = pasta deste arquivo).
 
 ## O que o painel garante
 
+- Modo **|ΔF|** no Explorador e no Ampliar (átomos coloridos pelo erro de força, em meV/Å) quando há `forcas`.
+- **Ressalvas** em faixas por seção/estrutura/resultado e na etiqueta do Ampliar; regras que não podem ser calculadas não
+  ganham veredito.
 - Seletor global **kJ/mol | kcal/mol | eV** (persistido no navegador); tema claro/escuro.
 - **Selo de nível de cálculo + programa/versão** em todo resultado; níveis misturados numa diferença geram aviso.
 - **🔍 Ampliar** em tela cheia: medidas por clique (distância/ângulo/diedro), isolar região, estilos por componente,
