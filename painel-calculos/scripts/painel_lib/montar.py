@@ -35,6 +35,8 @@ FREQ_ORCAMENTO_B = 6_000_000
 # ----------------------------------------------------------------------------------------------------------
 def carregar_config(caminho):
     p = Path(caminho)
+    if not p.is_file():
+        raise SystemExit(f"configuração não encontrada: {p}")
     txt = p.read_text(encoding="utf-8")
     if p.suffix.lower() in (".yaml", ".yml"):
         try:
@@ -152,7 +154,7 @@ class Montador:
                     ident = ident + "_" + arq.stem
                 try:
                     d["id"] = ident.format(**campos)
-                    for k in ("nome", "item", "replica", "grupo", "inicial", "trajetoria", "progresso", "nota"):
+                    for k in ("nome", "item", "replica", "grupo", "inicial", "trajetoria", "progresso", "registro", "nota"):
                         if isinstance(e.get(k), str):
                             d[k] = e[k].format(**campos)
                 except (KeyError, IndexError):
@@ -232,13 +234,25 @@ class Montador:
                 if prog["fim"] is None and prog["n"]:
                     idade = time.time() - ps[0].stat().st_mtime
                     estado = "rodando" if idade < self.ativo_s else "parado"
+        reg = {}
+        if e.get("registro"):                         # JSON por estrutura: completa o que o arquivo não registra
+            try:
+                reg = json.loads(self.caminho(e["registro"]).read_text(encoding="utf-8"))
+                reg = reg if isinstance(reg, dict) else {}
+            except Exception as ex:  # noqa: BLE001
+                self.aviso(f"{e['id']}: registro {e['registro']} ilegível ({type(ex).__name__})")
+        pega = lambda d, *ks: next((d[k] for k in ks if d.get(k) is not None), None)  # noqa: E731
         conv = R.get("convergiu")
         if conv is None and prog and prog["fim"] is not None:
             conv = prog["fim"].get("convergiu")
+        if conv is None and pega(reg, "convergiu", "converged") is not None:
+            conv = bool(pega(reg, "convergiu", "converged"))
         fmax_f = fin_q.get("fmax")
         passos = (len(quadros) - 1) if len(quadros) > 1 else None
         if prog and prog["fim"] and prog["fim"].get("passos") is not None:
             passos = prog["fim"]["passos"]
+        if passos is None:
+            passos = pega(reg, "passos", "steps", "n_passos")
         self.est[e["id"]] = {"cfg": e, "R": R, "quadros": quadros, "ini_q": ini_q, "fin_q": fin_q, "u": u, "cart": cart,
                              "cel_i": cel_i, "cel_f": cel_f, "ctx": ctx, "prog": prog, "selo": selo, "E": E}
         self.est[e["id"]]["json"] = {
@@ -248,7 +262,7 @@ class Montador:
             "ini": ints(u, 1000), "cel_i": cel_list(cel_i), "cp_i": cellpar(cel_i),
             "pos": ints(cart, 1000), "cel": cel_list(cel_f), "cp": cellpar(cel_f), "disp": ints(disp, 100),
             "E": E, "conv": conv, "passos": passos, "fmax": fmax_f, "sig": fin_q.get("sigma_GPa"),
-            "t": R.get("duracao_s") or (prog["fim"].get("tempo_s") if prog and prog["fim"] else None),
+            "t": R.get("duracao_s") or (prog["fim"].get("tempo_s") if prog and prog["fim"] else None) or pega(reg, "tempo_s", "duracao_s", "elapsed_s"),
             "estado": estado, "selo": selo, "arquivo": rel(e["arquivo"], self.base), "programa": R.get("programa"),
             "inicial": rel(self.caminho(e["inicial"]), self.base) if e.get("inicial") else None,
             "nota": e.get("nota"), "n_quadros": len(quadros), "mesmo_ini": mesmo,
@@ -499,10 +513,14 @@ class Montador:
             valores[vn] = (vals, selos)
         def avaliar(expr, vn):
             vals, selos = valores[vn]
-            nomes = nomes_expr(expr)
-            if any(n not in vals for n in nomes):
+            try:
+                nomes = nomes_expr(expr)
+                if any(n not in vals for n in nomes):
+                    return None, set()
+                return calc_expr(expr, vals), {selos[n] for n in nomes}
+            except Exception as ex:  # noqa: BLE001  (sintaxe inválida, divisão por zero, construção não permitida)
+                out["avisos"].append(self.T["av_expr"].format(expr, f"{type(ex).__name__}: {ex}"))
                 return None, set()
-            return calc_expr(expr, vals), {selos[n] for n in nomes}
         def checar(ss, onde, vn):
             if len(ss) > 1:
                 out["avisos"].append(self.T["av_mistura"].format(onde, vn, " | ".join(sorted(ss))))
@@ -718,7 +736,14 @@ class Montador:
                     ident = f"{ident}_{arq.stem}"
                 val = None
                 if s.get("referencia"):
-                    val = validar_freq(F["freqs_cm1"], s["referencia"])
+                    ref = s["referencia"]
+                    if isinstance(ref, dict) and ref.get("json"):
+                        try:
+                            ref = self._ref_freq_json(ref)
+                        except Exception as ex:  # noqa: BLE001
+                            self.aviso(f"{ident}: referência ilegível ({type(ex).__name__}: {ex})")
+                            ref = None
+                    val = validar_freq(F["freqs_cm1"], ref) if ref else None
                 out["sistemas"].append({"id": ident, "nome": s.get("nome") or ident, "classe": classe, "rotulo": s.get("rotulo") or R["extra"].get("rotulo"),
                                         "selo": self.selo(R, s.get("nivel")), "freqs": F["freqs_cm1"], "modos": modos, "sim": F["simbolos"],
                                         "pos": F["pos"], "idx": F["idx"], "cel": F.get("celula"), "nimag": F["n_imag"],
@@ -735,6 +760,23 @@ class Montador:
             else:
                 self.aviso(self.T["av_comparar"].format(a, b))
         return out
+
+    def _ref_freq_json(self, ref):
+        """tabela de referência num JSON: lista de dicionários; campo_rotulo aceita modelo ('{especie} · {descricao}')."""
+        d = json.loads(self.caminho(ref["json"]).read_text(encoding="utf-8"))
+        for k in str(ref.get("caminho", "")).split("."):
+            if k:
+                d = d[int(k)] if isinstance(d, list) else d[k]
+        cr, cv, cc = ref.get("campo_rotulo", "rotulo"), ref.get("campo_valor", "valor"), ref.get("campo_calc")
+        modos = []
+        for r in d if isinstance(d, list) else []:
+            if not isinstance(r, dict) or r.get(cv) is None:
+                continue
+            m = {"rotulo": cr.format(**r) if "{" in cr else r.get(cr), "valor": r[cv]}
+            if cc and r.get(cc) is not None:
+                m["calc"] = r[cc]
+            modos.append(m)
+        return dict({k: v for k, v in ref.items() if k not in ("json", "caminho", "campo_rotulo", "campo_valor", "campo_calc")}, modos=modos)
 
     # -------------------------------------------------------------- métodos
     def coletar_metodos(self):
@@ -946,9 +988,12 @@ def validar_freq(freqs, ref):
     pos = [f for f in freqs if f > 0]
     for r in modos or []:
         v = float(r.get("valor", r.get("exp")))
-        if not pos:
+        if r.get("calc") is not None:                # pareamento dado pela própria tabela de referência
+            c = float(r["calc"])
+        elif not pos:
             break
-        c = min(pos, key=lambda f: abs(f - v))
+        else:
+            c = min(pos, key=lambda f: abs(f - v))
         linhas.append({"rotulo": r.get("rotulo"), "ref": v, "calc": c, "dif": c - v})
     if not linhas:
         return None

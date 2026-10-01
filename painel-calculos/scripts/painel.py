@@ -160,7 +160,7 @@ def cmd_descobrir(a):
     linhas = ["# Rascunho gerado por `painel.py descobrir` — REVISE: escolha estruturas, papéis, energias e etapas.",
               f"titulo: \"Painel dos cálculos — {raiz.name}\"", "lang: pt", "unidade: kJ/mol", "recarga_s: 120", "",
               "estruturas:"]
-    freq, fila = [], []
+    freq, fila, ids_usados = [], [], set()
     for p in sorted(achados):
         tipo = L.detectar(p)
         r = p.relative_to(raiz)
@@ -169,6 +169,11 @@ def cmd_descobrir(a):
             if R["estado"] in ("ilegivel",) or not R["quadros"]:
                 continue
             nome = p.stem if p.stem not in ("OUTCAR", "vasprun", "CONTCAR") else p.parent.name
+            base_nome, k = nome, 1
+            while nome in ids_usados:                  # ids precisam ser únicos na configuração (dois programas podem compartilhar o nome)
+                k += 1
+                nome = f"{base_nome}_{k}"
+            ids_usados.add(nome)
             linhas += [f"  - id: {nome}", f"    arquivo: {r}", f"    # programa: {R['programa']} {R['versao'] or ''} · {len(R['quadros'])} quadros · estado {L.estado_final(R)}"]
             if R["freq"]:
                 freq.append(r)

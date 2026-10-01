@@ -930,6 +930,8 @@ def ler_ase(p, formato=None):
     fr = read(p, ":", format=formato) if formato else read(p, ":")
     if not isinstance(fr, list):
         fr = [fr]
+    if not fr:                                     # o ASE adivinhou um formato e não achou nenhuma estrutura: não é "concluído"
+        raise ValueError("nenhuma estrutura reconhecida no arquivo")
     for a in fr:
         _quadro_ase(R, a)
     info = dict(fr[-1].info) if fr else {}
