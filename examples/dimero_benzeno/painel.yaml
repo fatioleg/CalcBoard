@@ -1,0 +1,216 @@
+# Exemplo da skill painel-calculos: dímero de benzeno (sistema público, dados REAIS gerados por gerar_dados.py).
+# Gere o painel com:  python ../../painel-calculos/scripts/painel.py gerar painel.yaml
+titulo: "Dímero de benzeno: quanto dois anéis se atraem?"
+subtitulo: "Monômeros de benzeno → dímero (empilhado deslocado, sanduíche, em T). UMA (rede neural) para explorar; DFT B97-3c (ORCA) para conferir."
+lang: pt
+unidade: kJ/mol            # kJ/mol | kcal/mol | eV (o leitor troca no topo; a escolha fica salva)
+recarga_s: 300             # recarga automática da página (adiada se o modo Ampliar estiver aberto ou houver uso recente)
+saida: painel.html
+
+# Componentes: como colorir/agrupar as moléculas no 3D (sem isto, uma classe por fórmula distinta)
+componentes:
+  - {nome: "benzeno", formula: C6H6, cor: "#ff7f0e"}
+
+estruturas:
+  - id: benzeno_uma
+    nome: "Benzeno isolado · UMA"
+    arquivo: calc/uma/estruturas/benzeno.extxyz
+    inicial: calc/geometrias/benzeno.xyz
+    trajetoria: calc/uma/traj/benzeno.traj
+    progresso: calc/uma/progresso/benzeno.jsonl
+    papel: reagente
+    grupo: monomero
+  - id: "dimero_{item}_p{replica}"
+    nome: "Dímero {item} · partida {replica} · UMA"
+    arquivo: "calc/uma/estruturas/dimero_*__p*.extxyz"
+    padrao: "dimero_(?P<item>[A-Z]+)__p(?P<replica>\\d+)"
+    inicial: "calc/geometrias/{stem}.xyz"
+    trajetoria: "calc/uma/traj/{stem}.traj"
+    progresso: "calc/uma/progresso/{stem}.jsonl"
+    grupo: dimeros
+  - id: benzeno_dft
+    nome: "Benzeno isolado · B97-3c (ORCA)"
+    arquivo: calc/orca/benzeno/benzeno.out
+    grupo: dft
+  - id: dimero_dft
+    nome: "Dímero PD · B97-3c (ORCA)"
+    arquivo: calc/orca/dimero_PD/dimero_PD.out
+    grupo: dft
+  - id: sp_benzeno
+    nome: "Benzeno · B97-3c na geometria UMA"
+    arquivo: calc/orca/sp_na_geometria_uma/sp_benzeno.out
+    grupo: sp
+  - id: sp_dimero
+    nome: "Dímero PD · B97-3c na geometria UMA"
+    arquivo: calc/orca/sp_na_geometria_uma/sp_dimero_PD__p0.out
+    grupo: sp
+
+# Reagentes → produtos (os visualizadores lado a lado)
+reacao:
+  reagentes: [benzeno_uma]
+  produtos: [dimero_PD_p0, dimero_T_p0, dimero_S_p0]
+
+etapas:
+  - id: E1
+    nome: "Geometrias iniciais (ASE)"
+    arquivos: ["calc/geometrias/*.xyz"]
+    nota: "Benzeno da tabela G2 do ASE e três arranjos clássicos do dímero, cada um com 3 partidas (a 0 exata, a 1 e a 2 sacudidas em 0,02 Å)."
+  - id: E2
+    nome: "Otimizações com UMA (rede neural)"
+    estruturas: [benzeno_uma, dimero_PD_p0, dimero_PD_p1, dimero_PD_p2, dimero_S_p0, dimero_S_p1, dimero_S_p2, dimero_T_p0, dimero_T_p1, dimero_T_p2]
+    depende_de: [E1]
+    nota: "Exploração rápida: segundos por estrutura. Serve para achar os arranjos e ordená-los, não para o número final."
+  - id: E3
+    nome: "Frequências UMA (diferenças finitas)"
+    arquivos: ["calc/uma/freq/*.json"]
+    total: 2
+    depende_de: [E2]
+    nota: "Confere se as geometrias são mínimos (sem frequências imaginárias relevantes)."
+  - id: E4
+    nome: "DFT B97-3c com ORCA (otimização + frequências)"
+    arquivos: ["calc/orca/benzeno/benzeno.out", "calc/orca/dimero_PD/dimero_PD.out"]
+    depende_de: [E2]
+    nota: "A régua: método quântico com correção de dispersão, que confere o UMA."
+  - id: E5
+    nome: "DFT na geometria do UMA (mesma geometria)"
+    arquivos: ["calc/orca/sp_na_geometria_uma/*.out"]
+    total: 2
+    depende_de: [E2, E4]
+    nota: "Compara métodos na MESMA geometria: separa o erro de energia do erro de geometria."
+
+energia:
+  nome_principal: "UMA"
+  por: "por dímero"
+  termos:
+    E_mon: benzeno_uma
+    E_PD: dimero_PD_p0
+    E_T: dimero_T_p0
+    E_S: dimero_S_p0
+  variantes:
+    "B97-3c (geometria própria)": {E_mon: benzeno_dft, E_PD: dimero_dft}
+    "B97-3c na geometria UMA": {E_mon: sp_benzeno, E_PD: sp_dimero}
+  diagramas:
+    - titulo: "Formação do dímero a partir de dois benzenos isolados"
+      tipo: niveis
+      referencia: "2*E_mon"
+      niveis:
+        - {rotulo: "2 benzenos<br>isolados", expr: "2*E_mon"}
+        - {rotulo: "dímero S<br>(sanduíche)", expr: "E_S"}
+        - {rotulo: "dímero T<br>(em T)", expr: "E_T"}
+        - {rotulo: "dímero PD<br>(deslocado)", expr: "E_PD"}
+      passos:
+        - {de: 0, para: 3, rotulo: "interação PD"}
+  parcelas:
+    - nome: "Energia de interação (PD)"
+      expr: "E_PD - 2*E_mon"
+      explicacao: "Energia do dímero empilhado deslocado menos a de dois benzenos isolados. Negativa: os anéis se atraem (dispersão). Sem BSSE e sem ZPE."
+    - nome: "Energia de interação (T)"
+      expr: "E_T - 2*E_mon"
+      explicacao: "O mesmo para o arranjo em T, em que um C–H aponta para o centro do outro anel."
+    - nome: "Energia de interação (S)"
+      expr: "E_S - 2*E_mon"
+      explicacao: "Sanduíche perfeito: os anéis se repelem mais (quadrupolos alinhados), então atrai menos."
+    - nome: "PD em relação a T"
+      expr: "E_PD - E_T"
+      explicacao: "Diferença entre os dois arranjos mais estáveis; poucos kJ/mol separam as formas."
+
+ranking:
+  - titulo: "Arranjos do dímero (melhor partida de cada um)"
+    grupo: dimeros
+    por_fu: false
+    nota: "Energia relativa ao arranjo mais estável. A barra de erro é a dispersão entre as 3 partidas (0, 1 e 2)."
+
+medidas:
+  - id: dcc
+    nome: "Distância centroide–centroide"
+    tipo: distancia
+    a: "mol:1&el:C"
+    b: "mol:2&el:C"
+    explicacao: "Distância entre os centros dos dois anéis."
+    estruturas: [dimeros, dft, sp]
+    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft, sp_dimero]}
+    tolerancia: [0.1, 0.25]
+  - id: perp
+    nome: "Separação interplanar"
+    tipo: perpendicular
+    a: "mol:1&el:C"
+    b: "mol:2&el:C"
+    explicacao: "A linha centro–centro projetada na normal do anel 1: quão afastados estão os planos."
+    estruturas: [dimeros, dft, sp]
+    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft, sp_dimero]}
+    tolerancia: [0.1, 0.25]
+  - id: slip
+    nome: "Deslizamento lateral"
+    tipo: deslizamento
+    a: "mol:1&el:C"
+    b: "mol:2&el:C"
+    explicacao: "Quanto um anel está deslocado para o lado em relação ao outro."
+    estruturas: [dimeros, dft, sp]
+    referencia: {estrutura: dimero_dft, aplicar_a: [PD, dimero_dft, sp_dimero]}
+    tolerancia: [0.15, 0.4]
+  - id: ang
+    nome: "Ângulo entre os planos"
+    tipo: angulo_planos
+    a: "mol:1&el:C"
+    b: "mol:2&el:C"
+    casas: 1
+    explicacao: "0° = anéis paralelos (S e PD); 90° = perpendiculares (T)."
+    estruturas: [dimeros, dft, sp]
+    tolerancia: [2, 5]
+
+frequencias:
+  sistemas:
+    - id: bz_uma
+      nome: "Benzeno · UMA"
+      arquivo: calc/uma/freq/benzeno.json
+      rotulo: EXPLORATÓRIO
+      referencia:
+        fonte: "fundamentais experimentais do benzeno gasoso, aproximadas (Shimanouchi, NSRDS-NBS 39, 1972) — confira antes de publicar"
+        modos:
+          - {rotulo: "ν16 (deformação do anel fora do plano)", valor: 398}
+          - {rotulo: "ν6 (deformação do anel no plano)", valor: 608}
+          - {rotulo: "ν11 (C–H fora do plano, 'wag')", valor: 673}
+          - {rotulo: "ν1 (respiração do anel)", valor: 993}
+          - {rotulo: "ν18 (C–H no plano)", valor: 1038}
+          - {rotulo: "ν19 (C–C + C–H)", valor: 1484}
+    - id: bz_dft
+      nome: "Benzeno · B97-3c"
+      arquivo: calc/orca/benzeno/benzeno.out
+      referencia:
+        fonte: "fundamentais experimentais do benzeno gasoso, aproximadas (Shimanouchi, NSRDS-NBS 39, 1972) — confira antes de publicar"
+        modos:
+          - {rotulo: "ν16 (deformação do anel fora do plano)", valor: 398}
+          - {rotulo: "ν6 (deformação do anel no plano)", valor: 608}
+          - {rotulo: "ν11 (C–H fora do plano, 'wag')", valor: 673}
+          - {rotulo: "ν1 (respiração do anel)", valor: 993}
+          - {rotulo: "ν18 (C–H no plano)", valor: 1038}
+          - {rotulo: "ν19 (C–C + C–H)", valor: 1484}
+    - id: pd_uma
+      nome: "Dímero PD · UMA"
+      arquivo: calc/uma/freq/dimero_PD__p0.json
+      rotulo: EXPLORATÓRIO
+    - id: pd_dft
+      nome: "Dímero PD · B97-3c"
+      arquivo: calc/orca/dimero_PD/dimero_PD.out
+  comparar:
+    - {a: bz_uma, b: bz_dft}
+    - {a: pd_uma, b: pd_dft}
+
+fila:
+  - saida: "calc/orca/*/*.out"
+    grupo: "ORCA (DFT B97-3c)"
+
+metodos:
+  - titulo: "Geometrias iniciais"
+    campos:
+      Origem: "ase.build.molecule('C6H6') (conjunto G2) e dímeros montados por gerar_dados.py: S a 3,9 Å, PD a 3,6 Å com 1,6 Å de deslizamento, T a 5,0 Å"
+      Partidas: "0 = exata; 1 e 2 = posições sacudidas por ruído gaussiano de 0,02 Å (sementes 1 e 2)"
+  - titulo: "Otimizador das estruturas UMA"
+    campos:
+      Otimizador: "BFGS do ASE, fmax ≤ 0,01 eV/Å, até 400 passos"
+      Registro: "um quadro .traj e uma linha .jsonl por passo (filme e gráficos de energia/fmax)"
+
+glossario:
+  "PD, S e T": "Os três arranjos clássicos do dímero de benzeno: PD, empilhado e deslocado para o lado; S, sanduíche perfeito (um anel exatamente sobre o outro); T, um anel em pé apontando um C–H para o centro do outro."
+  "B97-3c": "Método DFT 'composto' de Grimme: funcional B97 com base própria (mTZVP) e correções de dispersão (D3) e de base. Bom custo-benefício para interações não covalentes."
+  "UMA": "Universal Model for Atoms (Meta FAIR): MLIP treinado com milhões de cálculos DFT; aqui na tarefa 'omol' (moléculas)."
