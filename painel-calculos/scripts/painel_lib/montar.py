@@ -162,6 +162,9 @@ class Montador:
                 for k in ("item", "replica"):
                     if k not in d and k in campos:
                         d[k] = campos[k]
+                if any(x["id"] == d["id"] for x in lista):   # id repetido sobrescreveria a estrutura anterior em silêncio
+                    self.aviso(self.T["av_id_repetido"].format(d["id"], rel(arq, self.base)))
+                    continue
                 lista.append(d)
         for e in lista:
             try:

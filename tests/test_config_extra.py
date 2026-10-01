@@ -77,5 +77,15 @@ class TestExpressaoInvalida(_Base):
         self.assertGreaterEqual(sum("inválida" in a for a in D["avisos"]), 2, D["avisos"])
 
 
+class TestIdRepetido(_Base):
+    def test_id_repetido_vira_aviso_e_mantem_o_primeiro(self):
+        orca = ORCA_DIMERO
+        D = self.gerar({"estruturas": [{"id": "x", "arquivo": str(orca / "benzeno" / "benzeno.out")},
+                                       {"id": "x", "arquivo": str(orca / "dimero_PD" / "dimero_PD.out")}]})
+        self.assertEqual([e["id"] for e in D["est"]], ["x"])
+        self.assertEqual(len(D["est"][0]["el"]), 12)
+        self.assertTrue(any("repetido" in a for a in D["avisos"]), D["avisos"])
+
+
 if __name__ == "__main__":
     unittest.main()
