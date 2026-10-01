@@ -1,0 +1,75 @@
+# Synthetic samples (fictitious numbers, realistic output layouts) used to exercise every reader.
+# English version of the dashboard: lang: en.   Generate:  python ../../painel-calculos/scripts/painel.py gerar painel.yaml
+titulo: "Reader test bench: CP2K, VASP, Gaussian, Quantum ESPRESSO, ORCA"
+subtitulo: "SYNTHETIC outputs (made-up numbers) plus a truncated real ORCA run. Nothing here is a scientific result."
+lang: en
+unidade: eV
+recarga_s: 0               # no automatic refresh for a static sample
+ativo_s: 1000000000        # samples are old files: treat unfinished outputs as still running (default: 1800 s)
+saida: painel.html
+
+estruturas:
+  - id: si_vasp
+    nome: "Si (diamond) · VASP relax"
+    arquivo: vasp/si_relax/OUTCAR
+    papel: reagente
+    grupo: periodic
+  - id: si_qe
+    nome: "Si (diamond) · pw.x relax"
+    arquivo: qe/SINTETICO_si_relax.out
+    papel: produto
+    grupo: periodic
+  - id: agua_cp2k
+    nome: "Water in a 10 Å box · CP2K GEO_OPT (running)"
+    arquivo: cp2k/agua_geo/SINTETICO_agua.out
+    molecula_em_caixa: true
+    grupo: molecules
+  - id: agua_g16
+    nome: "Water · Gaussian opt+freq"
+    arquivo: gaussian/SINTETICO_agua.log
+    grupo: molecules
+  - id: dimero_orca_run
+    nome: "Benzene dimer · ORCA (truncated real output)"
+    arquivo: orca/dimero_PD_em_andamento.out
+    grupo: molecules
+
+etapas:
+  - {id: S1, nome: "Periodic relaxations", estruturas: [si_vasp, si_qe], nota: "VASP and pw.x on the same toy crystal."}
+  - {id: S2, nome: "Molecular calculations", arquivos: ["gaussian/*.log", "cp2k/agua_geo/*.out", "orca/*.out"], depende_de: [S1]}
+  - {id: S3, nome: "Remote queue", fila: [SINTETICO_remoto_sp, SINTETICO_remoto_ok, SINTETICO_remoto_fila], depende_de: [S2]}
+  - {id: S4, nome: "Failed job (kept on purpose)", arquivos: ["cp2k/falhou/*.out"]}
+  - {id: S5, nome: "Report", nota: "Nothing to read yet: always pending."}
+
+energia:
+  nome_principal: "toy model"
+  termos:
+    R: {valor: 0.0, unidade: kcal/mol, fonte: "illustrative reaction profile (typed numbers)"}
+    TS: {valor: 18.4, unidade: kcal/mol, fonte: "illustrative"}
+    INT: {valor: 4.1, unidade: kcal/mol, fonte: "illustrative"}
+    P: {valor: -9.7, unidade: kcal/mol, fonte: "illustrative"}
+  diagramas:
+    - titulo: "Reaction profile R → TS → INT → P (typed, illustrative)"
+      tipo: perfil
+      niveis:
+        - {rotulo: "R", expr: "R"}
+        - {rotulo: "TS‡", expr: "TS"}
+        - {rotulo: "INT", expr: "INT"}
+        - {rotulo: "P", expr: "P"}
+      passos:
+        - {de: 0, para: 1, rotulo: "barrier"}
+  parcelas:
+    - {nome: "Activation energy", expr: "TS - R", classe: pos, explicacao: "Height of the barrier."}
+    - {nome: "Reaction energy", expr: "P - R", explicacao: "Negative: exothermic."}
+
+medidas:
+  - {id: oh, nome: "O–H distance", tipo: distancia, a: "el:O", b: "1", estruturas: [molecules]}
+  - {id: hoh, nome: "H–O–H angle", tipo: angulo, a: "1", b: "0", c: "2", estruturas: [molecules], casas: 1}
+  - {id: sisi, nome: "Si–Si nearest distance", tipo: distancia_minima, a: "0", b: "1", estruturas: [periodic]}
+
+frequencias:
+  - {id: g16, nome: "Water · Gaussian", arquivo: gaussian/SINTETICO_agua.log}
+
+fila:
+  - {saida: "cp2k/*/*.out", grupo: "CP2K (local)"}
+  - {saida: "orca/*.out", grupo: "ORCA (local)"}
+  - {json_vivo: vivo/ao_vivo.json, grupo: "Remote server (JSON status file)", programa: CP2K, criterio: {nome: EPS_SCF, valor: 1.0e-6, coluna: Convergence}}

@@ -1,0 +1,151 @@
+
+     Program PWSCF v.7.2 starts on  1Oct2026 at  9: 0: 0 
+
+     SINTETICO: silício (2 átomos), relax
+     bravais-lattice index     =            2
+     lattice parameter (alat)  =      10.2631  a.u.
+     unit-cell volume          =     270.2508 (a.u.)^3
+     number of atoms/cell      =            2
+     number of atomic types    =            1
+     kinetic-energy cutoff     =      30.0000  Ry
+     convergence threshold     =      1.0E-08
+     Exchange-correlation= PBE
+
+     celldm(1)=  10.263100  celldm(2)=   0.000000  celldm(3)=   0.000000
+
+     crystal axes: (cart. coord. in units of alat)
+               a(1) = (  -0.500000   0.000000   0.500000 )  
+               a(2) = (   0.000000   0.500000   0.500000 )  
+               a(3) = (  -0.500000   0.500000   0.000000 )  
+
+     PseudoPot. # 1 for Si read from file:
+     ./Si.pbe-n-rrkjus_psl.1.0.0.UPF
+
+     atomic species   valence    mass     pseudopotential
+        Si             4.00    28.08550     Si( 1.00)
+
+     Cartesian axes
+
+     site n.     atom                  positions (alat units)
+         1           Si  tau(   1) = (   0.0000000   0.0000000   0.0000000  )
+         2           Si  tau(   2) = (   0.2600000   0.2500000   0.2500000  )
+
+     number of k points=     2
+                       cart. coord. in units 2pi/alat
+        k(    1) = (  -0.2500000   0.2500000   0.2500000), wk =   0.5000000
+        k(    2) = (   0.2500000  -0.2500000   0.7500000), wk =   1.5000000
+
+     iteration #  1     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        0.9 secs
+
+     total energy              =     -15.82010000 Ry
+     estimated scf accuracy    <       0.05000000 Ry
+
+     iteration #  2     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        1.3 secs
+
+     total energy              =     -15.83810000 Ry
+     estimated scf accuracy    <       0.00500000 Ry
+
+     iteration #  3     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        1.7 secs
+
+     total energy              =     -15.83990000 Ry
+     estimated scf accuracy    <       0.00050000 Ry
+
+     iteration #  4     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        2.1 secs
+
+     total energy              =     -15.84008000 Ry
+     estimated scf accuracy    <       0.00005000 Ry
+
+     iteration #  5     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        2.5 secs
+
+     total energy              =     -15.84009800 Ry
+     estimated scf accuracy    <       0.00000500 Ry
+
+     iteration #  6     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        2.9 secs
+
+     total energy              =     -15.84009980 Ry
+     estimated scf accuracy    <       0.00000050 Ry
+
+     iteration #  7     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        3.3 secs
+
+     total energy              =     -15.84009998 Ry
+     estimated scf accuracy    <       0.00000005 Ry
+
+!    total energy              =     -15.84010000 Ry
+     estimated scf accuracy    <          0.00000005 Ry
+
+     convergence has been achieved in    7 iterations
+
+     Forces acting on atoms (cartesian axes, Ry/au):
+
+     atom    1 type  1   force =     -0.01200000    0.00000000    0.00000000
+     atom    2 type  1   force =     0.01200000    0.00000000    0.00000000
+
+     Total force =     0.017000     Total SCF correction =     0.000010
+
+     BFGS Geometry Optimization
+
+ATOMIC_POSITIONS (alat)
+Si            0.0000000000        0.0000000000        0.0000000000
+Si            0.2520000000        0.2500000000        0.2500000000
+
+     iteration #  1     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        3.7 secs
+
+     total energy              =     -15.82160000 Ry
+     estimated scf accuracy    <       0.05000000 Ry
+
+     iteration #  2     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        4.1 secs
+
+     total energy              =     -15.83960000 Ry
+     estimated scf accuracy    <       0.00500000 Ry
+
+     iteration #  3     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        4.5 secs
+
+     total energy              =     -15.84140000 Ry
+     estimated scf accuracy    <       0.00050000 Ry
+
+     iteration #  4     ecut=    30.00 Ry     beta= 0.70
+     total cpu time spent up to now is        4.9 secs
+
+     total energy              =     -15.84158000 Ry
+     estimated scf accuracy    <       0.00005000 Ry
+
+!    total energy              =     -15.84160000 Ry
+     estimated scf accuracy    <          0.00005000 Ry
+
+     convergence has been achieved in    4 iterations
+
+     Forces acting on atoms (cartesian axes, Ry/au):
+
+     atom    1 type  1   force =     -0.00600000    0.00000000    0.00000000
+     atom    2 type  1   force =     0.00600000    0.00000000    0.00000000
+
+     Total force =     0.008500     Total SCF correction =     0.000010
+
+     bfgs converged in   2 scf cycles and   1 bfgs steps
+     End of BFGS Geometry Optimization
+
+     Final energy   =     -15.8416000000 Ry
+Begin final coordinates
+
+ATOMIC_POSITIONS (alat)
+Si            0.0000000000        0.0000000000        0.0000000000
+Si            0.2520000000        0.2500000000        0.2500000000
+End final coordinates
+
+     PWSCF        :      4.52s CPU      5.10s WALL
+
+   This run was terminated on:   9: 0: 5   1Oct2026
+
+=------------------------------------------------------------------------------=
+   JOB DONE.
+=------------------------------------------------------------------------------=

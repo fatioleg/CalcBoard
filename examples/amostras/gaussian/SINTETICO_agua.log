@@ -1,0 +1,120 @@
+ Entering Gaussian System, Link 0=g16
+ Copyright (c) 1988-2019, Gaussian, Inc.  All Rights Reserved.
+ ******************************************
+ Gaussian 16:  ES64L-G16RevC.01  3-Jul-2019
+                 1-Oct-2026
+ ******************************************
+ -------------------------------------------
+ #p B3LYP/6-31G(d) opt freq EmpiricalDispersion=GD3BJ
+ -------------------------------------------
+ SINTETICO agua
+ Charge =  0 Multiplicity = 1
+                         Standard orientation:
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+       1           8           0         0.000000    0.000000    0.119000
+       2           1           0         0.000000    0.763000   -0.477000
+       3           1           0         0.000000   -0.763000   -0.477000
+ ---------------------------------------------------------------------
+ Requested convergence on RMS density matrix=1.00D-08 within 128 cycles.
+ Cycle   1  Pass 1  IDiag  1:
+ E= -76.407510000000     Delta-E=       -0.001000000000 Rises=F Damp=F
+ RMSDP=3.00D-03 MaxDP=1.00D-02              OVMax= 0.0
+ Cycle   2  Pass 1  IDiag  1:
+ E= -76.408410000000     Delta-E=       -0.000100000000 Rises=F Damp=F
+ RMSDP=3.00D-04 MaxDP=1.00D-03              OVMax= 0.0
+ Cycle   3  Pass 1  IDiag  1:
+ E= -76.408500000000     Delta-E=       -0.000010000000 Rises=F Damp=F
+ RMSDP=3.00D-05 MaxDP=1.00D-04              OVMax= 0.0
+ Cycle   4  Pass 1  IDiag  1:
+ E= -76.408509000000     Delta-E=       -0.000001000000 Rises=F Damp=F
+ RMSDP=3.00D-06 MaxDP=1.00D-05              OVMax= 0.0
+ Cycle   5  Pass 1  IDiag  1:
+ E= -76.408509900000     Delta-E=       -0.000000100000 Rises=F Damp=F
+ RMSDP=3.00D-07 MaxDP=1.00D-06              OVMax= 0.0
+ Cycle   6  Pass 1  IDiag  1:
+ E= -76.408509990000     Delta-E=       -0.000000010000 Rises=F Damp=F
+ RMSDP=3.00D-08 MaxDP=1.00D-07              OVMax= 0.0
+ SCF Done:  E(RB3LYP) =  -76.408510000     A.U. after    6 cycles
+         Item               Value     Threshold  Converged?
+ Maximum Force            0.012000     0.000450     NO
+                         Standard orientation:
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+       1           8           0         0.000000    0.000000    0.119000
+       2           1           0         0.000000    0.764929   -0.478206
+       3           1           0         0.000000   -0.764929   -0.478206
+ ---------------------------------------------------------------------
+ Requested convergence on RMS density matrix=1.00D-08 within 128 cycles.
+ Cycle   1  Pass 1  IDiag  1:
+ E= -76.407890000000     Delta-E=       -0.001000000000 Rises=F Damp=F
+ RMSDP=3.00D-03 MaxDP=1.00D-02              OVMax= 0.0
+ Cycle   2  Pass 1  IDiag  1:
+ E= -76.408790000000     Delta-E=       -0.000100000000 Rises=F Damp=F
+ RMSDP=3.00D-04 MaxDP=1.00D-03              OVMax= 0.0
+ Cycle   3  Pass 1  IDiag  1:
+ E= -76.408880000000     Delta-E=       -0.000010000000 Rises=F Damp=F
+ RMSDP=3.00D-05 MaxDP=1.00D-04              OVMax= 0.0
+ Cycle   4  Pass 1  IDiag  1:
+ E= -76.408889000000     Delta-E=       -0.000001000000 Rises=F Damp=F
+ RMSDP=3.00D-06 MaxDP=1.00D-05              OVMax= 0.0
+ Cycle   5  Pass 1  IDiag  1:
+ E= -76.408889900000     Delta-E=       -0.000000100000 Rises=F Damp=F
+ RMSDP=3.00D-07 MaxDP=1.00D-06              OVMax= 0.0
+ Cycle   6  Pass 1  IDiag  1:
+ E= -76.408889990000     Delta-E=       -0.000000010000 Rises=F Damp=F
+ RMSDP=3.00D-08 MaxDP=1.00D-07              OVMax= 0.0
+ SCF Done:  E(RB3LYP) =  -76.408890000     A.U. after    6 cycles
+         Item               Value     Threshold  Converged?
+ Maximum Force            0.003000     0.000450     YES
+                         Standard orientation:
+ ---------------------------------------------------------------------
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
+ ---------------------------------------------------------------------
+       1           8           0         0.000000    0.000000    0.119000
+       2           1           0         0.000000    0.765639   -0.478650
+       3           1           0         0.000000   -0.765639   -0.478650
+ ---------------------------------------------------------------------
+ Requested convergence on RMS density matrix=1.00D-08 within 128 cycles.
+ Cycle   1  Pass 1  IDiag  1:
+ E= -76.407900000000     Delta-E=       -0.001000000000 Rises=F Damp=F
+ RMSDP=3.00D-03 MaxDP=1.00D-02              OVMax= 0.0
+ Cycle   2  Pass 1  IDiag  1:
+ E= -76.408800000000     Delta-E=       -0.000100000000 Rises=F Damp=F
+ RMSDP=3.00D-04 MaxDP=1.00D-03              OVMax= 0.0
+ Cycle   3  Pass 1  IDiag  1:
+ E= -76.408890000000     Delta-E=       -0.000010000000 Rises=F Damp=F
+ RMSDP=3.00D-05 MaxDP=1.00D-04              OVMax= 0.0
+ Cycle   4  Pass 1  IDiag  1:
+ E= -76.408899000000     Delta-E=       -0.000001000000 Rises=F Damp=F
+ RMSDP=3.00D-06 MaxDP=1.00D-05              OVMax= 0.0
+ Cycle   5  Pass 1  IDiag  1:
+ E= -76.408899900000     Delta-E=       -0.000000100000 Rises=F Damp=F
+ RMSDP=3.00D-07 MaxDP=1.00D-06              OVMax= 0.0
+ Cycle   6  Pass 1  IDiag  1:
+ E= -76.408899990000     Delta-E=       -0.000000010000 Rises=F Damp=F
+ RMSDP=3.00D-08 MaxDP=1.00D-07              OVMax= 0.0
+ SCF Done:  E(RB3LYP) =  -76.408900000     A.U. after    6 cycles
+    -- Stationary point found.
+ Optimization completed.
+ Harmonic frequencies (cm**-1), IR intensities (KM/Mole), Raman scattering
+ activities (A**4/AMU), depolarization ratios for plane and unpolarized
+ incident light, reduced masses (AMU), force constants (mDyne/A),
+ and normal coordinates:
+                      1                      2                      3
+                     A1                     A1                     B2
+ Frequencies --   1625.3000              3712.8000              3818.4000
+ Red. masses --      1.0828                 1.0451                 1.0817
+  Atom  AN      X      Y      Z        X      Y      Z        X      Y      Z
+     1   8    0.00   0.00   0.07    0.00   0.00  -0.05    0.00   0.07   0.00
+     2   1    0.00  -0.43  -0.56    0.00   0.58   0.40    0.00  -0.56   0.43
+     3   1    0.00   0.43  -0.56    0.00  -0.58   0.40    0.00  -0.56  -0.43
+
+ Zero-point correction=                           0.021134 (Hartree/Particle)
+ Elapsed time:       0 days  0 hours  0 minutes 12.3 seconds.
+ Normal termination of Gaussian 16 at Thu Oct  1 09:00:12 2026.

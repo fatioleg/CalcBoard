@@ -1,0 +1,115 @@
+
+  **** **** ******  **  PROGRAM STARTED AT               2026-10-01 09:00:00.000
+ ***** ** ***  *** **   PROGRAM STARTED ON                   maquina-exemplo
+ CP2K| version string:                                          CP2K version 2024.1
+ GLOBAL| Project name                                                 SINTETICO_agua
+ GLOBAL| Run type                                                            GEO_OPT
+ CELL| Vector a [angstrom]:      10.000     0.000     0.000    |a| =      10.000000
+ CELL| Vector b [angstrom]:       0.000    10.000     0.000    |b| =      10.000000
+ CELL| Vector c [angstrom]:       0.000     0.000    10.000    |c| =      10.000000
+ DFT| Charge                                                                       0
+ DFT| Multiplicity                                                                 1
+ FUNCTIONAL| PBE:
+ FUNCTIONAL| J.P.Perdew, K.Burke, M.Ernzerhof, Phys. Rev. Letter, vol. 77, n 18, pp. 3865-3868, (1996)
+ vdW POTENTIAL|                                                       Pair Potential
+ vdW POTENTIAL|                                              DFT-D3 (Version 3.1)
+ QS| Density cutoff [a.u.]:                                                  200.0
+  Atomic kind: O                                    Number of atoms:       1
+     Orbital Basis Set                                       DZVP-MOLOPT-SR-GTH
+     GTH Potential information for                                GTH-PBE-q6
+  Atomic kind: H                                    Number of atoms:       2
+     Orbital Basis Set                                       DZVP-MOLOPT-SR-GTH
+     GTH Potential information for                                GTH-PBE-q1
+ SCF PARAMETERS         Density guess:                                     ATOMIC
+                        max_scf:                                               50
+                        eps_scf:                                         1.00E-06
+
+ MODULE QUICKSTEP: ATOMIC COORDINATES IN ANGSTROM
+
+  Atom  Kind  Element       X           Y           Z          Z(eff)       Mass
+
+       1     1 O     8    5.000000    5.000000    5.119000      6.0000      15.9990
+       2     2 H     1    5.000000    5.763000    4.523000      1.0000       1.0080
+       3     2 H     1    5.000000    4.237000    4.523000      1.0000       1.0080
+
+
+  Step     Update method      Time    Convergence         Total energy    Change
+  ------------------------------------------------------------------------------
+      1 OT DIIS     0.15E+00     0.8     0.08000000       -17.0177151701 -2.97E-01
+      2 OT DIIS     0.15E+00     0.8     0.03576703       -17.1383505559 -1.21E-01
+      2 OT LS       0.30E+00     0.8                      -17.1383505559
+      3 OT DIIS     0.15E+00     0.8     0.01599101       -17.1873972436 -4.90E-02
+      4 OT DIIS     0.15E+00     0.8     0.00714939       -17.2073381388 -1.99E-02
+      5 OT DIIS     0.15E+00     0.9     0.00319640       -17.2154455017 -8.11E-03
+      6 OT DIIS     0.15E+00     0.9     0.00142907       -17.2187417095 -3.30E-03
+      7 OT DIIS     0.15E+00     0.9     0.00063892       -17.2200818476 -1.34E-03
+      8 OT DIIS     0.15E+00     0.9     0.00028565       -17.2206267071 -5.45E-04
+      9 OT DIIS     0.15E+00     0.9     0.00012771       -17.2208482304 -2.22E-04
+     10 OT DIIS     0.15E+00     0.9     0.00005710       -17.2209382951 -9.01E-05
+     11 OT DIIS     0.15E+00     0.9     0.00002553       -17.2209749127 -3.66E-05
+     12 OT DIIS     0.15E+00     0.9     0.00001141       -17.2209898002 -1.49E-05
+     13 OT DIIS     0.15E+00     0.9     0.00000510       -17.2209958531 -6.05E-06
+     14 OT DIIS     0.15E+00     0.9     0.00000228       -17.2209983140 -2.46E-06
+
+  *** SCF run converged in    14 steps ***
+
+ ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:             -17.221000000000
+
+
+ --------  Informations at step =     1 ------------
+  Max. gradient              =         0.0041000000
+  Conv. limit for gradients  =         0.0004500000
+
+ OPTIMIZATION STEP:      2
+
+  Step     Update method      Time    Convergence         Total energy    Change
+  ------------------------------------------------------------------------------
+      1 OT DIIS     0.15E+00     0.8     0.08000000       -17.0203151701 -2.97E-01
+      2 OT DIIS     0.15E+00     0.8     0.03576703       -17.1409505559 -1.21E-01
+      2 OT LS       0.30E+00     0.8                      -17.1409505559
+      3 OT DIIS     0.15E+00     0.8     0.01599101       -17.1899972436 -4.90E-02
+      4 OT DIIS     0.15E+00     0.8     0.00714939       -17.2099381388 -1.99E-02
+      5 OT DIIS     0.15E+00     0.9     0.00319640       -17.2180455017 -8.11E-03
+      6 OT DIIS     0.15E+00     0.9     0.00142907       -17.2213417095 -3.30E-03
+      7 OT DIIS     0.15E+00     0.9     0.00063892       -17.2226818476 -1.34E-03
+      8 OT DIIS     0.15E+00     0.9     0.00028565       -17.2232267071 -5.45E-04
+      9 OT DIIS     0.15E+00     0.9     0.00012771       -17.2234482304 -2.22E-04
+
+  *** SCF run converged in    9 steps ***
+
+ ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:             -17.223600000000
+
+
+ --------  Informations at step =     2 ------------
+  Max. gradient              =         0.0013666667
+  Conv. limit for gradients  =         0.0004500000
+
+ OPTIMIZATION STEP:      3
+
+  Step     Update method      Time    Convergence         Total energy    Change
+  ------------------------------------------------------------------------------
+      1 OT DIIS     0.15E+00     0.8     0.08000000       -17.0208151701 -2.97E-01
+      2 OT DIIS     0.15E+00     0.8     0.03576703       -17.1414505559 -1.21E-01
+      2 OT LS       0.30E+00     0.8                      -17.1414505559
+      3 OT DIIS     0.15E+00     0.8     0.01599101       -17.1904972436 -4.90E-02
+      4 OT DIIS     0.15E+00     0.8     0.00714939       -17.2104381388 -1.99E-02
+      5 OT DIIS     0.15E+00     0.9     0.00319640       -17.2185455017 -8.11E-03
+      6 OT DIIS     0.15E+00     0.9     0.00142907       -17.2218417095 -3.30E-03
+      7 OT DIIS     0.15E+00     0.9     0.00063892       -17.2231818476 -1.34E-03
+      8 OT DIIS     0.15E+00     0.9     0.00028565       -17.2237267071 -5.45E-04
+      9 OT DIIS     0.15E+00     0.9     0.00012771       -17.2239482304 -2.22E-04
+
+  *** SCF run converged in    9 steps ***
+
+ ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:             -17.224100000000
+
+
+ OPTIMIZATION STEP:      4
+
+  Step     Update method      Time    Convergence         Total energy    Change
+  ------------------------------------------------------------------------------
+      1 OT DIIS     0.15E+00     0.8     0.00200000       -17.0209151701 -2.97E-01
+      2 OT DIIS     0.15E+00     0.8     0.00112541       -17.1415505559 -1.21E-01
+      3 OT DIIS     0.15E+00     0.8     0.00063327       -17.1905972436 -4.90E-02
+      4 OT DIIS     0.15E+00     0.8     0.00035635       -17.2105381388 -1.99E-02
+      5 OT DIIS     0.15E+00     0.9     0.00020052       -17.2186455017 -8.11E-03

@@ -1,0 +1,14 @@
+{"quando": "2026-10-01 09:30:00",
+ "jobs": [
+  {"job": "SINTETICO_remoto_sp", "estado": "rodando",
+   "walltime": ["START Thu Oct  1 09:10:00 -03 2026 NP=8 host=servidor-exemplo"],
+   "scf": [[1, -120.10, -120.10, 0.0812], [2, -120.31, -0.21, 0.0234], [3, -120.352, -0.042, 0.0061], [4, -120.3561, -0.0041, 0.0019],
+           [5, -120.35671, -0.00061, 0.00052], [6, -120.356781, -0.000071, 0.00016]],
+   "scf_convergiu": 0, "abortou": false, "energia_Ha": null},
+  {"job": "SINTETICO_remoto_ok", "estado": "ok",
+   "walltime": ["START Thu Oct  1 08:00:00 -03 2026 NP=8 host=servidor-exemplo", "END Thu Oct  1 08:16:07 -03 2026 elapsed_s=967 rc=0"],
+   "scf": [[1, -98.1, -98.1, 0.05], [2, -98.31, -0.21, 0.004], [3, -98.3172, -0.0072, 0.00031], [4, -98.31731, -0.00011, 0.0000009]],
+   "scf_convergiu": 1, "abortou": false, "energia_Ha": "-98.317312345"},
+  {"job": "SINTETICO_remoto_fila", "estado": "pendente", "scf": []}
+ ],
+ "fila_log": ["09:10 SINTETICO_remoto_sp iniciado", "08:16 SINTETICO_remoto_ok terminou (rc=0)"]}

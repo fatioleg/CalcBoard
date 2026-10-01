@@ -1,0 +1,58 @@
+ vasp.6.4.2 20Jul23 (build Oct 01 2026) complex
+ executed on             LinuxIFC date 2026.10.01  09:00:00
+ POTCAR:    PAW_PBE Si 05Jan2001
+ POTCAR:    PAW_PBE Si 05Jan2001
+   VRHFIN =Si: s2p2
+   ions per type =               2
+   ENCUT  =  520.0 eV  38.22 Ry    6.18 a.u.
+   EDIFF  = 0.1E-05   stopping-criterion for ELM
+   IBRION =      2    ionic relax: 0-MD 1-quasi-New 2-CG
+   ISIF   =      3    stress and relaxation
+   GGA     = PE    GGA type
+   IVDW   =     12
+
+ direct lattice vectors                 reciprocal lattice vectors
+    0.000000000  2.715000000  2.715000000     0.0 0.0 0.0
+    2.715000000  0.000000000  2.715000000     0.0 0.0 0.0
+    2.715000000  2.715000000  0.000000000     0.0 0.0 0.0
+
+ direct lattice vectors                 reciprocal lattice vectors
+    0.000000000  2.715000000  2.715000000     0.0 0.0 0.0
+    2.715000000  0.000000000  2.715000000     0.0 0.0 0.0
+    2.715000000  2.715000000  0.000000000     0.0 0.0 0.0
+
+  FORCE on cell =-STRESS in cart. coord.  units (eV):
+  in kB       -3.20000   -3.20000   -3.20000     0.00000     0.00000     0.00000
+
+ POSITION                                       TOTAL-FORCE (eV/Angst)
+ -----------------------------------------------------------------------------------
+        0.00000        0.00000        0.00000         0.020000     -0.020000      0.000000
+        1.35750        1.35750        1.35750         0.020000     -0.020000      0.000000
+ -----------------------------------------------------------------------------------
+
+  free  energy   TOTEN  =       -10.82550000 eV
+
+  energy  without entropy=      -10.82510000  energy(sigma->0) =      -10.82530000
+
+
+ direct lattice vectors                 reciprocal lattice vectors
+    0.000000000  2.720430000  2.720430000     0.0 0.0 0.0
+    2.720430000  0.000000000  2.720430000     0.0 0.0 0.0
+    2.720430000  2.720430000  0.000000000     0.0 0.0 0.0
+
+  FORCE on cell =-STRESS in cart. coord.  units (eV):
+  in kB       -0.30000   -0.30000   -0.30000     0.00000     0.00000     0.00000
+
+ POSITION                                       TOTAL-FORCE (eV/Angst)
+ -----------------------------------------------------------------------------------
+        0.00200       -0.00100        0.00000         0.010000     -0.010000      0.000000
+        1.35700        1.35800        1.35750         0.010000     -0.010000      0.000000
+ -----------------------------------------------------------------------------------
+
+  free  energy   TOTEN  =       -10.82670000 eV
+
+  energy  without entropy=      -10.82630000  energy(sigma->0) =      -10.82650000
+
+ reached required accuracy - stopping structural energy minimisation
+ General timing and accounting informations for this job:
+                  Elapsed time (sec):       42.317
