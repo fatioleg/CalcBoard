@@ -58,7 +58,7 @@ Em todo o painel:
 
 Detalhes e limitações: [`painel-calculos/references/leitores.md`](painel-calculos/references/leitores.md).
 ORCA e ASE foram testados com saídas reais (exemplo do dímero de benzeno); CP2K, VASP, Gaussian e QE com amostras
-sintéticas curtas (`examples/amostras/`, arquivos `SINTETICO_*`).
+sintéticas curtas (`examples/amostras/`, recriadas por `gerar_amostras.py`).
 
 ## Instalação
 
