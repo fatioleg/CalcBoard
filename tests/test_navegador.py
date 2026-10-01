@@ -79,7 +79,35 @@ class TestNavegador(unittest.TestCase):
                 " o.n_est = D.est.length; o.lang = document.documentElement.lang; return o; })()")
         r = captura(self.html["dimero"], "-o", self.tmp / "u.png", "--avaliar", expr)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertEqual(resultado_avaliar(r.stdout), {"kcal": "kcal/mol", "ev": "eV", "kj": "kJ/mol", "n_est": 14, "lang": "pt-BR"})
+        self.assertEqual(resultado_avaliar(r.stdout), {"kcal": "kcal/mol", "ev": "eV", "kj": "kJ/mol", "n_est": 22, "lang": "pt-BR"})
+
+    def test_novas_secoes_e_modo_de_erro_de_forca(self):
+        """validação, energia relativa e regra de decisão desenham; o modo |ΔF| colore o explorador; as unidades chegam à regra."""
+        expr = ("(() => { const o = {}; ['valid', 'relativa', 'regra'].forEach(k => { const c = document.getElementById('c_' + k); o[k] = !!c && c.children.length > 0; });"
+                " o.btn = document.getElementById('e_btn_df').style.display !== 'none';"
+                " document.getElementById('e_sis').value = 'dimero_T_p2'; EX.modo = 'df'; exploradorRender(false);"
+                " o.cbar = document.getElementById('e_cbar').style.display; o.dmax = document.getElementById('e_dmax').textContent;"
+                " o.ressalvas = document.querySelectorAll('.ressalva').length > 0;"
+                " setUnit('ev'); o.ev = document.querySelector('#c_regra .enu').textContent; setUnit('kj');"
+                " o.rel = document.querySelectorAll('#c_relativa .js-plotly-plot').length; return o; })()")
+        r = captura(self.html["dimero"], "-o", self.tmp / "s.png", "--avaliar", expr)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("0 erro(s) de JavaScript", r.stdout)
+        res = resultado_avaliar(r.stdout)
+        self.assertEqual((res["valid"], res["relativa"], res["regra"], res["btn"], res["cbar"], res["ressalvas"], res["ev"]), (True, True, True, True, "block", True, "eV"), res)
+        self.assertRegex(res["dmax"], r"^\d+ meV/Å$")
+        self.assertEqual(res["rel"], 1)
+
+    def test_ampliar_em_modo_de_erro_de_forca_mostra_ressalva_no_selo(self):
+        r = captura(self.html["dimero"], "-o", self.tmp / "zf.png", "--hash", "#zoom=dimero_T_p0/df",
+                    "--avaliar", "({cbar: document.getElementById('zcbar').style.display, badge: document.getElementById('zbadge').textContent.includes('⚠'), modo: ZS.modo})")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(resultado_avaliar(r.stdout), {"cbar": "block", "badge": True, "modo": "df"})
+        # estrutura sem comparação de forças: o modo |ΔF| cai para o modo final (nada inventado)
+        r = captura(self.html["dimero"], "-o", self.tmp / "zg.png", "--hash", "#zoom=benzeno_dft/df",
+                    "--avaliar", "document.getElementById('zcbar').style.display")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(resultado_avaliar(r.stdout), "none")
 
     def test_abrir_direto_no_modo_ampliar_pelo_hash(self):
         r = captura(self.html["dimero"], "-o", self.tmp / "z.png", "--hash", "#zoom=dimero_T_p0",
